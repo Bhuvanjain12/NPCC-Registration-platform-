@@ -1,37 +1,57 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { db, storage } from "./firebase";
-import { collection, addDoc, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, getDocs, updateDoc, doc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function App() {
   const [players, setPlayers] = useState([]);
-  const [form, setForm] = useState({});
-  const [payment, setPayment] = useState(null);
+  const [form, setForm] = useState({
+    category:"",
+    name:"",
+    phone:"",
+    email:"",
+    native:"",
+    dob:"",
+    role:"",
+    tshirt:"",
+    team:"",
+    payment:null,
+    photo:null,
+    approved:false
+  });
 
-  useEffect(() => {
-    return onSnapshot(collection(db, "players"), snap =>
-      setPlayers(snap.docs.map(d => ({ id: d.id, ...d.data() })))
-    );
-  }, []);
+  const loadPlayers = async () => {
+    const snap = await getDocs(collection(db,"players"));
+    setPlayers(snap.docs.map(d => ({ id:d.id, ...d.data() })));
+  };
 
-  const submit = async () => {
-    let proof = "";
+  useEffect(()=>{ loadPlayers(); },[]);
 
-    if (payment) {
-      const r = ref(storage, "payments/" + Date.now());
-      await uploadBytes(r, payment);
-      proof = await getDownloadURL(r);
-    }
+  const uploadFile = async(file,path)=>{
+    const r = ref(storage,path);
+    await uploadBytes(r,file);
+    return await getDownloadURL(r);
+  };
 
-    await addDoc(collection(db, "players"), {
+  const submit = async()=>{
+    const paymentURL = await uploadFile(form.payment,"payments/"+Date.now());
+    const photoURL = await uploadFile(form.photo,"photos/"+Date.now());
+
+    await addDoc(collection(db,"players"),{
       ...form,
-      payment: proof,
-      approved: false,
-      auctionStatus: "Unsold",
-      team: ""
+      payment:paymentURL,
+      photo:photoURL,
+      approved:false
     });
 
-    alert("Registration submitted!");
+    alert("Submitted! Waiting for approval.");
+    setForm({});
+    loadPlayers();
+  };
+
+  const approve = async(id)=>{
+    await updateDoc(doc(db,"players",id),{approved:true});
+    loadPlayers();
   };
 
   return (
@@ -39,82 +59,77 @@ export default function App() {
       <div style={card}>
         <h2>NPCC Registration</h2>
 
-        <select style={field} onChange={e=>setForm({...form,category:e.target.value})}>
+        <select onChange={e=>setForm({...form,category:e.target.value})}>
           <option>Select Category</option>
-          <option>Youth (15–35)</option>
+          <option>Youth</option>
           <option>40+</option>
         </select>
 
-        <input style={field} placeholder="Name" onChange={e=>setForm({...form,name:e.target.value})}/>
-        <input style={field} placeholder="Phone" onChange={e=>setForm({...form,phone:e.target.value})}/>
-        <input style={field} placeholder="Email" onChange={e=>setForm({...form,email:e.target.value})}/>
-        <input style={field} placeholder="Native Place" onChange={e=>setForm({...form,native:e.target.value})}/>
-        <input style={field} type="date" onChange={e=>setForm({...form,dob:e.target.value})}/>
-
-        <select style={field} onChange={e=>setForm({...form,role:e.target.value})}>
-          <option>Select Role</option>
-          <option>Batsman</option>
-          <option>Bowler</option>
-          <option>All-rounder</option>
-          <option>Wicketkeeper</option>
-        </select>
-
-        <select style={field} onChange={e=>setForm({...form,tshirt:e.target.value})}>
-          <option>T-Shirt Size</option>
-          <option>S</option><option>M</option><option>L</option>
-          <option>XL</option><option>XXL</option>
-        </select>
+        <input placeholder="Name" onChange={e=>setForm({...form,name:e.target.value})}/>
+        <input placeholder="Phone" onChange={e=>setForm({...form,phone:e.target.value})}/>
+        <input placeholder="Email" onChange={e=>setForm({...form,email:e.target.value})}/>
+        <input placeholder="Native" onChange={e=>setForm({...form,native:e.target.value})}/>
+        <input type="date" onChange={e=>setForm({...form,dob:e.target.value})}/>
+        <input placeholder="Role" onChange={e=>setForm({...form,role:e.target.value})}/>
+        <input placeholder="T-shirt Size" onChange={e=>setForm({...form,tshirt:e.target.value})}/>
+        <input placeholder="Team (optional)" onChange={e=>setForm({...form,team:e.target.value})}/>
 
         <p>Pay ₹500 → bjain6851-1@okaxis</p>
 
-        <input type="file" style={field} onChange={e=>setPayment(e.target.files[0])} />
+        Payment Screenshot:
+        <input type="file" onChange={e=>setForm({...form,payment:e.target.files[0]})}/>
 
-        <button style={btn} onClick={submit}>Submit</button>
+        Player Photo:
+        <input type="file" onChange={e=>setForm({...form,photo:e.target.files[0]})}/>
 
-        <h3 style={{marginTop:20}}>Approved Players</h3>
+        <button onClick={submit}>Submit</button>
+
+        <h3>Approved Players</h3>
         {players.filter(p=>p.approved).map(p=>(
-          <div key={p.id}>{p.name} — {p.team || "Unsold"}</div>
+          <div key={p.id} style={player}>
+            <img src={p.photo} width="60"/>
+            {p.name} - {p.role} - {p.team}
+          </div>
+        ))}
+
+        <h3>Admin Panel</h3>
+        {players.filter(p=>!p.approved).map(p=>(
+          <div key={p.id} style={adminRow}>
+            {p.name}
+            <button onClick={()=>approve(p.id)}>Approve</button>
+          </div>
         ))}
       </div>
     </div>
   );
 }
 
-/* UI */
-
 const page = {
   minHeight:"100vh",
+  background:"linear-gradient(#c9f1e6,#e9f7d9)",
   display:"flex",
   justifyContent:"center",
-  alignItems:"center",
-  background:"linear-gradient(135deg,#b8e1dc,#e6f0c8)"
+  alignItems:"center"
 };
 
 const card = {
-  width:360,
-  padding:28,
-  borderRadius:22,
   background:"#fff",
-  boxShadow:"0 20px 40px rgba(0,0,0,.15)",
-  textAlign:"center"
+  padding:30,
+  borderRadius:20,
+  width:320,
+  boxShadow:"0 10px 30px rgba(0,0,0,.15)",
+  display:"flex",
+  flexDirection:"column",
+  gap:8
 };
 
-const field = {
-  width:"100%",
-  padding:14,
-  margin:"8px 0",
-  borderRadius:12,
-  border:"1px solid #ccc"
+const player = {
+  display:"flex",
+  gap:10,
+  alignItems:"center"
 };
 
-const btn = {
-  width:"100%",
-  padding:14,
-  marginTop:10,
-  borderRadius:30,
-  border:"none",
-  background:"linear-gradient(135deg,#1ec98b,#16a085)",
-  color:"white",
-  fontSize:16,
-  cursor:"pointer"
+const adminRow = {
+  display:"flex",
+  justifyContent:"space-between"
 };
