@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   User, Phone, MapPin, CheckCircle, CreditCard, Lock, Shield, Users, 
-  Search, Camera, Check, X, Zap, Trophy, ChevronRight, ArrowRight, 
-  Download, RefreshCcw, Filter, LayoutGrid, FileSpreadsheet, Edit3
+  Camera, Check, X, Zap, Trophy, ChevronRight, ArrowRight, 
+  Download, RefreshCcw, Filter, FileSpreadsheet, Edit3
 } from 'lucide-react';
 
 // --- FIREBASE IMPORTS ---
@@ -26,7 +26,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const appId = "npcc-registration-platform";
 
-// MANDATORY PATH STRUCTURE
+// MANDATORY PATH (Rule 1)
 const COLLECTION_PATH = ['artifacts', appId, 'public', 'data', 'players'];
 
 // Helper: Image Compression
@@ -58,7 +58,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('All');
 
-  // --- AUTH ---
+  // --- AUTHENTICATION ---
   useEffect(() => {
     const initAuth = async () => {
       try { await signInAnonymously(auth); } catch (err) { console.error("Auth Error:", err); }
@@ -85,14 +85,14 @@ export default function App() {
 
   const navigate = (v) => { setView(v); window.scrollTo(0,0); };
 
-  // --- EXCEL DOWNLOAD (CSV) ---
-  const exportToExcel = () => {
+  // --- EXCEL EXPORT ---
+  const exportData = () => {
     if (players.length === 0) return alert("Kheladiyo ka data nahi hai!");
-    const headers = ["Name,Category,Age,Contact,Native,Status,AuctionStatus,Team"];
-    const rows = players.map(p => `${p.name},${p.category},${p.age},${p.contact},${p.native},${p.paymentStatus},${p.auctionStatus},${p.team}`);
-    const csvContent = "data:text/csv;charset=utf-8," + headers.concat(rows).join("\n");
+    const headers = ["Name", "Category", "Age", "Contact", "Native", "Status", "AuctionStatus", "Team"];
+    const rows = players.map(p => [p.name, p.category, p.age, p.contact, p.native, p.paymentStatus, p.auctionStatus, p.team || "-"]);
+    let csv = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
     const link = document.createElement("a");
-    link.href = encodeURI(csvContent);
+    link.href = encodeURI(csv);
     link.download = "NPCC_Full_Report.csv";
     document.body.appendChild(link);
     link.click();
@@ -107,7 +107,7 @@ export default function App() {
           <div className="w-8 h-8 bg-white text-[#5c3a21] rounded-full flex items-center justify-center font-black">N</div>
           NPCC Cricket
         </div>
-        <div className="flex gap-4 text-xs font-black uppercase tracking-widest">
+        <div className="flex gap-4 text-xs font-bold uppercase tracking-widest">
           <button onClick={() => navigate('directory')} className="hover:text-orange-200">Players Pool</button>
           {!isAdmin ? (
             <button onClick={() => navigate('admin-login')} className="text-orange-200 border border-white/20 px-2 rounded">Admin</button>
@@ -129,21 +129,18 @@ export default function App() {
           <Zap className="text-blue-600 mb-4 group-hover:scale-125 transition-transform" size={40} />
           <h2 className="text-2xl font-black mb-1 uppercase italic">Youth League</h2>
           <p className="text-gray-400 text-[10px] mb-6 font-black uppercase">15 to 35 Saal</p>
-          <div className="text-blue-600 font-black flex items-center gap-1 uppercase text-sm">Register →</div>
+          <div className="text-blue-600 font-black flex items-center gap-1 uppercase text-sm underline decoration-blue-200">Register →</div>
         </button>
         <button onClick={() => { setCategory('40+'); navigate('register'); }} className="bg-white p-8 rounded-[40px] shadow-2xl border-2 border-transparent hover:border-orange-500 transition-all text-left group">
           <Trophy className="text-orange-700 mb-4 group-hover:scale-125 transition-transform" size={40} />
           <h2 className="text-2xl font-black mb-1 uppercase italic">40+ League</h2>
-          <p className="text-gray-400 text-[10px] mb-6 font-black uppercase">40 Saal & Above</p>
-          <div className="text-orange-700 font-black flex items-center gap-1 uppercase text-sm">Register →</div>
+          <p className="text-gray-400 text-[10px] mb-6 font-black uppercase tracking-widest">40 Saal & Above</p>
+          <div className="text-orange-700 font-black flex items-center gap-1 uppercase text-sm underline decoration-orange-200">Register →</div>
         </button>
       </div>
 
-      <button 
-        onClick={() => navigate('directory')}
-        className="mt-16 bg-white border-4 border-[#5c3a21] text-[#5c3a21] px-12 py-5 rounded-full font-black uppercase tracking-widest text-sm hover:bg-[#5c3a21] hover:text-white transition-all shadow-2xl active:scale-95"
-      >
-        View Auction Pool Status
+      <button onClick={() => navigate('directory')} className="mt-16 bg-white border-4 border-[#5c3a21] text-[#5c3a21] px-12 py-5 rounded-full font-black uppercase tracking-widest text-xs hover:bg-[#5c3a21] hover:text-white transition-all shadow-2xl active:scale-95">
+        View Auction Status Pool
       </button>
     </div>
   );
@@ -154,10 +151,8 @@ export default function App() {
 
     const handleNext = (e) => {
       e.preventDefault();
-      // DUPLICATE CHECKING
-      const isRegistered = players.some(plr => plr.contact === f.contact);
-      if(isRegistered) return alert("❌ Ye number pehle se registered hai!");
-
+      // DUPLICATE BLOCKING
+      if(players.some(plr => plr.contact === f.contact)) return alert("❌ Ye number pehle se registered hai!");
       if(!p) return alert("Photo upload karein!");
       setTempPlayer({ ...f, category, photoUrl: p, timestamp: new Date().toISOString(), id: 'P' + Date.now().toString().slice(-6) });
       navigate('payment');
@@ -175,7 +170,7 @@ export default function App() {
           <input required placeholder="NATIVE PLACE" className="w-full p-4 bg-gray-50 border-2 rounded-2xl font-bold uppercase focus:border-[#5c3a21] outline-none" onChange={e => setF({...f, native: e.target.value})} />
         </div>
         <div className="border-4 border-dashed p-8 text-center cursor-pointer relative rounded-[30px] bg-gray-50 border-gray-200">
-          {p ? <img src={p} className="h-32 w-32 mx-auto rounded-full object-cover border-4 border-white shadow-xl" /> : <div className="text-gray-300 font-black flex flex-col items-center gap-2"><Camera size={40}/><span className="text-[10px] tracking-[4px]">PLAYER PHOTO</span></div>}
+          {p ? <img src={p} className="h-32 w-32 mx-auto rounded-full object-cover border-4 border-white shadow-xl" /> : <div className="text-gray-300 font-black flex flex-col items-center gap-2"><Camera size={40}/><span className="text-[10px] tracking-[4px]">UPLOAD PHOTO</span></div>}
           <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async e => setP(await compressImage(e.target.files[0]))} />
         </div>
         <button className="w-full bg-[#5c3a21] text-white py-5 rounded-3xl font-black text-lg shadow-xl uppercase italic">Next: Payment</button>
@@ -243,15 +238,14 @@ export default function App() {
               <div className="p-8 text-center">
                 <h3 className="font-black text-2xl text-[#5c3a21] italic uppercase leading-none mb-1 tracking-tighter">{p.name}</h3>
                 <p className="text-[11px] font-black text-gray-400 uppercase tracking-[3px] mb-4">{p.native} • {p.age} Saal</p>
-                
-                {/* AUCTION STATUS DISPLAY */}
-                <div className={`mt-2 p-3 rounded-2xl text-center font-black text-[10px] uppercase tracking-widest shadow-inner border-2 ${p.auctionStatus === 'Sold' ? 'bg-green-50 border-green-200 text-green-700 italic' : 'bg-gray-50 border-gray-100 text-gray-400'}`}>
+                {/* AUCTION STATUS */}
+                <div className={`p-3 rounded-2xl text-center font-black text-[10px] uppercase tracking-widest shadow-inner border-2 ${p.auctionStatus === 'Sold' ? 'bg-green-50 border-green-200 text-green-700 italic' : 'bg-gray-50 border-gray-100 text-gray-400'}`}>
                   {p.auctionStatus === 'Sold' ? `TEAM: ${p.team}` : 'UNSOLD'}
                 </div>
               </div>
             </div>
           ))}
-          {list.length === 0 && <div className="col-span-full py-20 text-center font-black text-gray-300 animate-pulse">Wait: Syncing Data...</div>}
+          {list.length === 0 && <div className="col-span-full py-20 text-center font-black text-gray-300 animate-pulse uppercase tracking-[8px]">Wait: Loading Cloud Data...</div>}
         </div>
       </div>
     );
@@ -263,39 +257,37 @@ export default function App() {
     return (
       <div className="max-w-7xl mx-auto mt-10 p-4 pb-40">
         <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 px-4">
-           <h2 className="text-4xl font-black text-[#5c3a21] uppercase italic tracking-tighter decoration-orange-400 underline underline-offset-8">Admin Control</h2>
-           <button onClick={exportToExcel} className="flex items-center gap-3 bg-green-600 text-white px-10 py-4 rounded-full font-black text-sm shadow-2xl hover:bg-green-700 active:scale-95 transition-all">
+           <h2 className="text-4xl font-black text-[#5c3a21] uppercase italic tracking-tighter underline decoration-orange-400">Admin Control</h2>
+           <button onClick={exportData} className="flex items-center gap-3 bg-green-600 text-white px-10 py-4 rounded-full font-black text-sm shadow-2xl hover:bg-green-700 active:scale-95 transition-all">
              <FileSpreadsheet size={22}/> DOWNLOAD DATA (EXCEL)
            </button>
         </div>
         <div className="bg-white rounded-[50px] shadow-2xl overflow-hidden border border-gray-100">
           <div className="overflow-x-auto">
             <table className="w-full text-left min-w-[800px]">
-              <thead className="bg-gray-100 border-b-2">
-                <tr><th className="p-8 font-black text-[10px] uppercase tracking-widest text-gray-500">Player Profile</th><th className="p-8 font-black text-[10px] uppercase tracking-widest text-gray-500 text-center">Status</th><th className="p-8 font-black text-[10px] uppercase tracking-widest text-gray-500 text-center">Auction Status & Team</th></tr>
+              <thead className="bg-gray-100 border-b-2 font-black text-[10px] uppercase tracking-widest text-gray-500">
+                <tr><th className="p-8">Player Profile</th><th className="p-8 text-center">Status</th><th className="p-8 text-center">Auction & Team</th></tr>
               </thead>
               <tbody>
                 {players.map(p => (
-                  <tr key={p.id} className="border-b border-gray-50 hover:bg-orange-50/20 transition-all">
+                  <tr key={p.id} className="border-b border-gray-50 hover:bg-orange-50/20">
                     <td className="p-8 flex items-center gap-5">
                       <img src={p.photoUrl} className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-2xl" />
-                      <div><div className="font-black text-[#5c3a21] uppercase text-lg italic leading-none mb-1 tracking-tighter">{p.name}</div><div className="text-[11px] font-black text-gray-400 uppercase tracking-widest">{p.category} • {p.contact}</div></div>
+                      <div><div className="font-black text-[#5c3a21] uppercase text-lg italic tracking-tight leading-none mb-1">{p.name}</div><div className="text-[11px] font-black text-gray-400 uppercase tracking-widest">{p.category} • {p.contact}</div></div>
                     </td>
                     <td className="p-8 text-center">
                       {p.paymentStatus === 'Paid' ? (
                         <span className="text-[11px] font-black bg-green-100 text-green-700 px-5 py-2 rounded-full border-2 border-green-200 uppercase italic">Verified</span>
                       ) : (
-                        <button onClick={() => setSel(p)} className="text-[11px] font-black bg-orange-100 text-orange-700 px-5 py-2 rounded-full border-2 border-orange-200 animate-pulse italic uppercase shadow-xl">Verify SS</button>
+                        <button onClick={() => setSel(p)} className="text-[11px] font-black bg-orange-100 text-orange-700 px-5 py-2 rounded-full border-2 border-orange-200 animate-pulse italic uppercase">Check Proof</button>
                       )}
                     </td>
                     <td className="p-8 text-center">
                       <div className="flex items-center gap-2 justify-center">
-                        {/* Sold/Unsold Switcher */}
                         <select className="text-[10px] font-black border-2 rounded-xl p-2 uppercase outline-none focus:border-[#5c3a21] bg-gray-50" value={p.auctionStatus} onChange={(e) => upd(p.id, { auctionStatus: e.target.value })}>
                           <option value="Unsold">UNSOLD</option><option value="Sold">SOLD</option>
                         </select>
-                        {/* Team Name Input */}
-                        <input placeholder="Enter Team Name" className="text-[10px] font-black border-2 p-2 rounded-xl w-40 uppercase focus:border-[#5c3a21] outline-none shadow-inner" value={p.team === '-' ? '' : p.team} onChange={(e) => upd(p.id, { team: e.target.value })} />
+                        <input placeholder="Team Name" className="text-[10px] font-black border-2 p-2 rounded-xl w-32 uppercase focus:border-[#5c3a21] outline-none shadow-inner" value={p.team === '-' ? '' : p.team} onChange={(e) => upd(p.id, { team: e.target.value })} />
                       </div>
                     </td>
                   </tr>
@@ -307,41 +299,12 @@ export default function App() {
         {sel && (
           <div className="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[999] backdrop-blur-xl">
             <div className="bg-white p-10 rounded-[60px] w-full max-w-lg text-center relative shadow-2xl border-8 border-orange-50">
-              <button
-                onClick={() => setSel(null)}
-                className="absolute -top-6 -right-6 bg-[#5c3a21] text-white rounded-full p-4 shadow-2xl"
-              >
-                <X size={28} />
-              </button>
-
-              <h3 className="font-black text-2xl mb-8 text-[#5c3a21] italic uppercase">
-                Proof Image
-              </h3>
-
-              <div className="bg-gray-100 p-3 rounded-[40px] mb-10">
-                <img
-                  src={sel.screenshot}
-                  className="max-h-[450px] mx-auto rounded-[30px] object-contain"
-                />
-              </div>
-
+              <button onClick={() => setSel(null)} className="absolute -top-6 -right-6 bg-[#5c3a21] text-white rounded-full p-4 shadow-2xl active:scale-90 transition-all"><X size={28}/></button>
+              <h3 className="font-black text-2xl mb-8 text-[#5c3a21] italic uppercase underline decoration-orange-400 tracking-tighter">Transaction Proof</h3>
+              <div className="bg-gray-100 p-3 rounded-[40px] mb-10 border-4 border-gray-50 shadow-inner overflow-hidden"><img src={sel.screenshot} className="max-h-[450px] mx-auto rounded-[30px] shadow-2xl object-contain" /></div>
               <div className="flex gap-4">
-                <button
-                  onClick={() => setSel(null)}
-                  className="flex-1 py-5 bg-gray-100 rounded-[30px] font-black"
-                >
-                  CLOSE
-                </button>
-
-                <button
-                  onClick={async () => {
-                    await upd(sel.id, { paymentStatus: "Paid" });
-                    setSel(null);
-                  }}
-                  className="flex-1 py-5 bg-green-600 text-white rounded-[30px] font-black"
-                >
-                  APPROVE
-                </button>
+                <button onClick={() => setSel(null)} className="flex-1 py-5 bg-gray-100 rounded-[30px] font-black text-gray-400 italic">CLOSE</button>
+                <button onClick={async () => { await upd(sel.id, { paymentStatus: 'Paid' }); setSel(null); }} className="flex-1 py-5 bg-green-600 text-white rounded-[30px] font-black shadow-2xl italic tracking-tighter uppercase">APPROVE NOW</button>
               </div>
             </div>
           </div>
@@ -350,22 +313,9 @@ export default function App() {
     );
   };
 
-  if (loading) {
+  const AdminLogin = () => {
+    const [p, setP] = useState('');
     return (
-      <div className="h-screen flex flex-col items-center justify-center text-xl font-black">
-        Loading...
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <Navbar />
-      {view === 'landing' && <Landing />}
-      {view === 'register' && <Register />}
-      {view === 'payment' && <Payment />}
-      {view === 'directory' && <PlayerDirectory />}
-      {view === 'admin-login' && <AdminDashboard />}
-    </>
-  );
-}
+      <div className="max-w-md mx-auto mt-20 p-12 bg-white shadow-2xl rounded-[50px] border-t-[10px] border-[#5c3a21] text-center mx-4">
+        <Shield size={60} className="mx-auto text-[#5c3a21] mb-8" />
+        <h2 className="text-3xl font-black mb-10 uppercase tracking-tighter italic">Admin 
