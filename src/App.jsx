@@ -306,13 +306,42 @@ export default function App() {
         </div>
         {sel && (
           <div className="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[999] backdrop-blur-xl">
-            <div className="bg-white p-10 rounded-[60px] w-full max-w-lg text-center relative shadow-2xl border-8 border-orange-50 animate-in zoom-in duration-200">
-              <button onClick={() => setSel(null)} className="absolute -top-6 -right-6 bg-[#5c3a21] text-white rounded-full p-4 shadow-2xl active:scale-90 transition-all"><X size={28}/></button>
-              <h3 className="font-black text-2xl mb-8 text-[#5c3a21] italic uppercase underline decoration-orange-400 tracking-tighter">Proof Image</h3>
-              <div className="bg-gray-100 p-3 rounded-[40px] mb-10 border-4 border-gray-50 shadow-inner overflow-hidden"><img src={sel.screenshot} className="max-h-[450px] mx-auto rounded-[30px] shadow-2xl object-contain" /></div>
+            <div className="bg-white p-10 rounded-[60px] w-full max-w-lg text-center relative shadow-2xl border-8 border-orange-50">
+              <button
+                onClick={() => setSel(null)}
+                className="absolute -top-6 -right-6 bg-[#5c3a21] text-white rounded-full p-4 shadow-2xl"
+              >
+                <X size={28} />
+              </button>
+
+              <h3 className="font-black text-2xl mb-8 text-[#5c3a21] italic uppercase">
+                Proof Image
+              </h3>
+
+              <div className="bg-gray-100 p-3 rounded-[40px] mb-10">
+                <img
+                  src={sel.screenshot}
+                  className="max-h-[450px] mx-auto rounded-[30px] object-contain"
+                />
+              </div>
+
               <div className="flex gap-4">
-                <button onClick={() => setSel(null)} className="flex-1 py-5 bg-gray-100 rounded-[30px] font-black text-gray-400 italic">CLOSE</button>
-                <button onClick={async () => { await upd(sel.id, { paymentStatus: 'Paid' }); setSel(null); }} className="flex-1 py-5 bg-green-600 text-white rounded-[30px] font-black shadow-2xl italic tracking-tighter uppercase">APPROVE</button>
+                <button
+                  onClick={() => setSel(null)}
+                  className="flex-1 py-5 bg-gray-100 rounded-[30px] font-black"
+                >
+                  CLOSE
+                </button>
+
+                <button
+                  onClick={async () => {
+                    await upd(sel.id, { paymentStatus: "Paid" });
+                    setSel(null);
+                  }}
+                  className="flex-1 py-5 bg-green-600 text-white rounded-[30px] font-black"
+                >
+                  APPROVE
+                </button>
               </div>
             </div>
           </div>
