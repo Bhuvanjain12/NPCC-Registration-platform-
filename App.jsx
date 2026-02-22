@@ -1,1 +1,0 @@
-export default function App(){return <h1>NPCC Platform Ready – Paste your full app code here</h1>}
