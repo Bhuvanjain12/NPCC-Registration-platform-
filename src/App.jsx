@@ -211,8 +211,7 @@ function App() {
     const [saving, setSaving] = useState(false);
     const upiId = "bjain6851-1@okaxis";
     // QR generator using reliable API
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`upi://pay?pa=${upiId}&pn=Bhuvan%20Jain&am=500&cu=INR`)}`;
-
+    const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=bjain6851@okaxis&pn=Bhuvan%20Jain&cu=INR";
     const handleFinalSubmit = async () => {
       if(!user) return;
       setSaving(true);
