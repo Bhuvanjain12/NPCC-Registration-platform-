@@ -1,176 +1,106 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  doc
+} from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAH1uDW3MJ29NzkmGL9A_sZk1k2j4e-PWQ",
+  authDomain: "npcc-registration-platform.firebaseapp.com",
+  projectId: "npcc-registration-platform",
+  storageBucket: "npcc-registration-platform.firebasestorage.app",
+  messagingSenderId: "778084490263",
+  appId: "1:778084490263:web:b61cdc54c5912fc35e5052"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 export default function App() {
-  const [step, setStep] = useState("category");
-  const [category, setCategory] = useState("");
-  const [dob, setDob] = useState("");
-  const [age, setAge] = useState(null);
+  const [step, setStep] = useState("register");
+  const [players, setPlayers] = useState([]);
+  const [admin, setAdmin] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
     phone: "",
     email: "",
-    native: ""
+    native: "",
+    category: "",
+    status: "Pending"
   });
 
-  const [proof, setProof] = useState(null);
-
-  const calculateAge = (date) => {
-    const birth = new Date(date);
-    const today = new Date();
-    let years = today.getFullYear() - birth.getFullYear();
-    if (
-      today.getMonth() < birth.getMonth() ||
-      (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())
-    ) {
-      years--;
-    }
-    setAge(years);
+  const loadPlayers = async () => {
+    const snap = await getDocs(collection(db, "players"));
+    setPlayers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   };
 
-  const validAge =
-    category === "youth"
-      ? age >= 15 && age <= 35
-      : category === "40plus"
-      ? age >= 40
-      : false;
+  useEffect(() => { loadPlayers(); }, []);
 
-  if (step === "success") {
+  const register = async () => {
+    await addDoc(collection(db, "players"), form);
+    setStep("done");
+  };
+
+  const approve = async (id) => {
+    await updateDoc(doc(db, "players", id), { status: "Approved" });
+    loadPlayers();
+  };
+
+  if (step === "done")
+    return <h2 style={{textAlign:"center"}}>Submitted for Admin Approval ✅</h2>;
+
+  if (step === "admin") {
     return (
       <div style={box}>
-        <h2>Registration Submitted 🎉</h2>
-        <p>Payment sent for verification.</p>
-        <p>Admin will approve soon.</p>
-      </div>
-    );
-  }
-
-  if (step === "payment") {
-    return (
-      <div style={box}>
-        <h2>Pay Registration Fee ₹500</h2>
-
-        {/* Replace QR image link if you want */}
-        <img
-          src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=bjain6851-1@okaxis&pn=Bhuvan%20Jain&am=500&cu=INR"
-          alt="UPI QR"
-          style={{ margin: 20 }}
-        />
-
-        <p><b>UPI:</b> bjain6851-1@okaxis</p>
-
-        <input type="file" onChange={(e) => setProof(e.target.files[0])} />
-
-        <button
-          style={greenBtn}
-          disabled={!proof}
-          onClick={() => setStep("success")}
-        >
-          Submit Payment Proof
-        </button>
-      </div>
-    );
-  }
-
-  if (step === "form") {
-    return (
-      <div style={box}>
-        <h2>{category === "youth" ? "Youth Registration" : "40+ Registration"}</h2>
-
-        <input
-          style={input}
-          placeholder="Full Name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
-
-        <input
-          style={input}
-          type="date"
-          value={dob}
-          onChange={(e) => {
-            setDob(e.target.value);
-            calculateAge(e.target.value);
-          }}
-        />
-
-        {age !== null && <p>Age: {age}</p>}
-
-        {!validAge && age !== null && (
-          <p style={{ color: "red" }}>Age not allowed for this category</p>
-        )}
-
-        {validAge && (
-          <>
-            <input
-              style={input}
-              placeholder="Mobile Number"
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            />
-
-            <input
-              style={input}
-              placeholder="Email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-            />
-
-            <input
-              style={input}
-              placeholder="Native Place"
-              value={form.native}
-              onChange={(e) => setForm({ ...form, native: e.target.value })}
-            />
-
-            <button style={greenBtn} onClick={() => setStep("payment")}>
-              Proceed to Payment ₹500
-            </button>
-          </>
-        )}
+        <h2>Admin Panel</h2>
+        {players.map(p => (
+          <div key={p.id} style={card}>
+            <b>{p.name}</b> — {p.category} — {p.status}
+            {p.status === "Pending" && (
+              <button onClick={() => approve(p.id)}>Approve</button>
+            )}
+          </div>
+        ))}
       </div>
     );
   }
 
   return (
     <div style={box}>
-      <h2>NPCC Player Registration</h2>
+      <h2>NPCC Registration</h2>
 
-      <button style={btn} onClick={() => { setCategory("youth"); setStep("form"); }}>
-        Youth League (15–35)
-      </button>
+      <input style={input} placeholder="Name" onChange={e=>setForm({...form,name:e.target.value})}/>
+      <input style={input} placeholder="Phone" onChange={e=>setForm({...form,phone:e.target.value})}/>
+      <input style={input} placeholder="Email" onChange={e=>setForm({...form,email:e.target.value})}/>
+      <input style={input} placeholder="Native" onChange={e=>setForm({...form,native:e.target.value})}/>
 
-      <button style={btn} onClick={() => { setCategory("40plus"); setStep("form"); }}>
-        40+ League
+      <select style={input} onChange={e=>setForm({...form,category:e.target.value})}>
+        <option value="">Select Category</option>
+        <option value="Youth">Youth</option>
+        <option value="40+">40+</option>
+      </select>
+
+      <button style={greenBtn} onClick={register}>Submit Registration</button>
+
+      <button style={btn} onClick={()=>{
+        const u=prompt("Username");
+        const p=prompt("Password");
+        if(u==="Bhuvan" && p==="bababhuvandev") setStep("admin");
+      }}>
+        Admin Login
       </button>
     </div>
   );
 }
 
-const box = {
-  maxWidth: 420,
-  margin: "auto",
-  padding: 20,
-  textAlign: "center"
-};
-
-const input = {
-  width: "100%",
-  padding: 10,
-  margin: "8px 0",
-  fontSize: 16
-};
-
-const btn = {
-  width: "100%",
-  padding: 12,
-  margin: "10px 0",
-  fontSize: 16
-};
-
-const greenBtn = {
-  ...btn,
-  background: "green",
-  color: "white",
-  border: "none"
-};
+const box={maxWidth:420,margin:"auto",padding:20,textAlign:"center"};
+const input={width:"100%",padding:10,margin:"6px 0"};
+const btn={padding:10,marginTop:10};
+const greenBtn={...btn,background:"green",color:"white"};
+const card={border:"1px solid #ccc",padding:10,margin:8};
