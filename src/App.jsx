@@ -1,17 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, Phone, Mail, MapPin, CheckCircle, 
-  CreditCard, Lock, Shield, Users, BarChart, Download, 
-  LogOut, Search, Edit3, Image as ImageIcon,
-  Camera, Check, X, Zap, Trophy, ChevronRight, ExternalLink
+  CreditCard, Lock, Shield, Trophy, ChevronRight, Camera
 } from 'lucide-react';
 
-// --- REAL FIREBASE INITIALIZATION ---
+// FIREBASE INITIALIZATION
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, onSnapshot, doc, setDoc, updateDoc } from 'firebase/firestore';
 
-// Your Official Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAH1uDW3MJ29NzkmGL9A_sZk1k2j4e-PWQ",
   authDomain: "npcc-registration-platform.firebaseapp.com",
@@ -27,31 +24,19 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const appId = "npcc-registration-platform"; 
 
-// Utility to compress images so they fit in Firestore (1MB limit)
+// Helper function to compress images
 const compressImage = (file) => {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = (event) => {
+    reader.onload = (e) => {
       const img = new Image();
-      img.src = event.target.result;
+      img.src = e.target.result;
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 600;
-        const MAX_HEIGHT = 600;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-        } else {
-          if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
+        canvas.width = 400; canvas.height = 400;
+        ctx.drawImage(img, 0, 0, 400, 400);
         resolve(canvas.toDataURL('image/jpeg', 0.6));
       };
     };
@@ -66,115 +51,47 @@ export default function App() {
   const [tempPlayer, setTempPlayer] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const theme = {
-    bg: 'bg-[#f8f5f0]',
-    primary: 'bg-[#5c3a21]',
-    primaryText: 'text-[#5c3a21]',
-    primaryHover: 'hover:bg-[#4a2e1a]',
-    secondary: 'bg-[#d4b895]'
-  };
-
-  // Authenticate user anonymously on load
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        await signInAnonymously(auth);
-      } catch (error) {
-        console.error("Auth Error:", error);
-      }
-    };
-    initAuth();
+    signInAnonymously(auth).catch(err => console.error("Auth Error:", err));
+    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+    return () => unsubscribe();
+  }, []);
 
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setIsLoading(false);
+  useEffect(() => {
+    const playersRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
+    const unsubscribe = onSnapshot(playersRef, (snapshot) => {
+      setPlayers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
     return () => unsubscribe();
   }, []);
 
-  // Fetch real-time data from Firestore
-  useEffect(() => {
-    if (!user) return;
-    const playersRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
-    const unsubscribe = onSnapshot(playersRef, (snapshot) => {
-      const playersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      playersList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      setPlayers(playersList);
-    }, (error) => {
-      console.error("Firestore Sync Error:", error);
-    });
-    return () => unsubscribe();
-  }, [user]);
+  const navigate = (v) => { setView(v); window.scrollTo(0,0); };
 
-  const navigate = (newView) => {
-    setView(newView);
-    window.scrollTo(0, 0);
-  };
-
-  // --- UI Components ---
-
+  // --- SUB-COMPONENTS ---
   const Navbar = () => (
-    <nav className={`${theme.primary} text-white p-4 shadow-md sticky top-0 z-50`}>
-      <div className="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
-        <div className="flex items-center gap-2 font-bold text-xl cursor-pointer" onClick={() => navigate(isAdmin ? 'admin-dashboard' : (currentUser ? 'directory' : 'landing'))}>
-          <div className="w-8 h-8 rounded-full bg-white text-[#5c3a21] flex items-center justify-center font-black">N</div>
-          NPCC Cricket Club
-        </div>
-        <div className="flex gap-4 text-sm font-medium items-center">
-          {!isAdmin && !currentUser && (
-            <>
-              <button onClick={() => navigate('landing')} className="hover:text-[#d4b895] transition">Register</button>
-              <button onClick={() => navigate('login')} className="hover:text-[#d4b895] transition">Player Login</button>
-              <button onClick={() => navigate('admin-login')} className="flex items-center gap-1 text-[#d4b895] hover:text-white transition"><Shield size={16} /> Admin</button>
-            </>
-          )}
-          {currentUser && !isAdmin && (
-            <>
-              <span className="text-[#d4b895]">Hi, {currentUser.name.split(' ')[0]}</span>
-              <button onClick={() => navigate('directory')} className="hover:text-[#d4b895] transition">Directory</button>
-              <button onClick={() => setCurrentUser(null)} className="flex items-center gap-1 hover:text-red-300 transition"><LogOut size={16} /> Logout</button>
-            </>
-          )}
-          {isAdmin && (
-            <>
-              <span className="text-[#d4b895] flex items-center gap-1"><Shield size={16}/> Admin Mode</span>
-              <button onClick={() => { setIsAdmin(false); navigate('landing'); }} className="flex items-center gap-1 hover:text-red-300 transition"><LogOut size={16} /> Logout</button>
-            </>
-          )}
+    <nav className="bg-[#5c3a21] text-white p-4 shadow-md sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto flex justify-between items-center">
+        <div className="font-bold text-xl cursor-pointer" onClick={() => navigate('landing')}>NPCC Cricket</div>
+        <div className="flex gap-4 text-sm">
+          <button onClick={() => navigate('login')}>Login</button>
+          <button onClick={() => navigate('admin-login')} className="text-[#d4b895]">Admin</button>
         </div>
       </div>
     </nav>
   );
 
   const LandingPage = () => (
-    <div className="max-w-4xl mx-auto mt-12 px-4">
-      <div className="text-center mb-12">
-        <div className="w-20 h-20 rounded-full bg-white shadow-lg mx-auto flex items-center justify-center mb-6 border-4 border-[#5c3a21]">
-          <span className="text-3xl font-black text-[#5c3a21]">N</span>
-        </div>
-        <h1 className={`text-4xl md:text-5xl font-black ${theme.primaryText} mb-4 tracking-tight`}>NPCC Auction Portal</h1>
-        <p className="text-xl text-gray-600">Select your league category to begin registration</p>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-        <button onClick={() => { setRegistrationCategory('Youth'); navigate('register'); }} className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-500 text-left overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
-          <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-6"><Zap size={28} /></div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Youth League</h2>
-          <div className="inline-block bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded-full text-sm mb-4">Ages 15 to 35</div>
-          <p className="text-gray-500 mb-6">Register for the upcoming youth category auction. Showcase your talent on the big stage.</p>
-          <div className="flex items-center text-blue-600 font-bold group-hover:translate-x-2 transition-transform">Register Now <ChevronRight size={20} className="ml-1" /></div>
+    <div className="max-w-4xl mx-auto mt-12 px-4 text-center">
+      <h1 className="text-4xl font-black text-[#5c3a21] mb-8">NPCC Auction Portal</h1>
+      <div className="grid md:grid-cols-2 gap-6">
+        <button onClick={() => { setRegistrationCategory('Youth'); navigate('register'); }} className="bg-white p-8 rounded-2xl shadow-lg border-2 border-transparent hover:border-blue-500 transition">
+          <h2 className="text-2xl font-bold mb-2">Youth League</h2>
+          <p className="text-gray-500">Ages 15 to 35</p>
         </button>
-
-        <button onClick={() => { setRegistrationCategory('40+'); navigate('register'); }} className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-[#5c3a21] text-left overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#f8f5f0] rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
-          <div className="w-14 h-14 bg-[#f8f5f0] text-[#5c3a21] rounded-xl flex items-center justify-center mb-6"><Trophy size={28} /></div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">40+ League</h2>
-          <div className="inline-block bg-[#e6dcc8] text-[#5c3a21] font-bold px-3 py-1 rounded-full text-sm mb-4">Age 40 & Above</div>
-          <p className="text-gray-500 mb-6">Join the legends pool. Register for the veteran category auction and experience the thrill again.</p>
-          <div className="flex items-center text-[#5c3a21] font-bold group-hover:translate-x-2 transition-transform">Register Now <ChevronRight size={20} className="ml-1" /></div>
+        <button onClick={() => { setRegistrationCategory('40+'); navigate('register'); }} className="bg-white p-8 rounded-2xl shadow-lg border-2 border-transparent hover:border-[#5c3a21] transition">
+          <h2 className="text-2xl font-bold mb-2">40+ League</h2>
+          <p className="text-gray-500">Age 40 & Above</p>
         </button>
       </div>
     </div>
@@ -182,171 +99,165 @@ export default function App() {
 
   const RegistrationForm = () => {
     const [formData, setFormData] = useState({ name: '', age: '', contact: '', email: '', native: '' });
-    const [photoDataUrl, setPhotoDataUrl] = useState(null);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [error, setError] = useState('');
-
-    if (!registrationCategory) { navigate('landing'); return null; }
-
-    const handlePhotoChange = async (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        setIsProcessing(true);
-        setPhotoDataUrl(await compressImage(file));
-        setIsProcessing(false);
-      }
-    };
+    const [photo, setPhoto] = useState(null);
 
     const handleSubmit = (e) => {
       e.preventDefault();
-      const ageNum = parseInt(formData.age);
-      if (registrationCategory === 'Youth' && (ageNum < 15 || ageNum > 35)) return setError('Youth League age must be between 15 and 35.');
-      if (registrationCategory === '40+' && ageNum < 40) return setError('40+ League age must be 40 or above.');
-      if (!photoDataUrl) return setError('Please upload a player photo.');
-      
-      const exists = players.find(p => p.contact === formData.contact);
-      if (exists) return setError('A player with this contact number is already registered.');
-
-      setError('');
-      setTempPlayer({
-        ...formData,
-        category: registrationCategory,
-        id: 'NPCC' + Math.floor(1000 + Math.random() * 9000),
-        photoUrl: photoDataUrl,
-        timestamp: new Date().toISOString()
-      });
+      if(!photo) return alert("Photo upload karein!");
+      setTempPlayer({ ...formData, category: registrationCategory, id: 'NPCC' + Date.now().toString().slice(-4), photoUrl: photo });
       navigate('payment');
     };
 
     return (
-      <div className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-lg border border-[#e6dcc8]">
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => navigate('landing')} className="text-sm text-gray-500 hover:text-black">← Back</button>
-          <span className={`px-3 py-1 rounded-full text-xs font-bold ${registrationCategory === 'Youth' ? 'bg-blue-100 text-blue-700' : 'bg-[#e6dcc8] text-[#5c3a21]'}`}>{registrationCategory} Category</span>
+      <form onSubmit={handleSubmit} className="max-w-xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-md space-y-4">
+        <h2 className="text-2xl font-bold text-center">Register as {registrationCategory}</h2>
+        <input required placeholder="Full Name" className="w-full p-2 border rounded" onChange={e => setFormData({...formData, name: e.target.value})} />
+        <input required type="number" placeholder="Age" className="w-full p-2 border rounded" onChange={e => setFormData({...formData, age: e.target.value})} />
+        <input required type="tel" placeholder="Mobile Number" className="w-full p-2 border rounded" onChange={e => setFormData({...formData, contact: e.target.value})} />
+        <input required type="text" placeholder="Native Place" className="w-full p-2 border rounded" onChange={e => setFormData({...formData, native: e.target.value})} />
+        <div className="border-2 border-dashed p-4 text-center cursor-pointer relative">
+          {photo ? <img src={photo} className="h-20 mx-auto" /> : "Click to Upload Photo"}
+          <input type="file" className="absolute inset-0 opacity-0" onChange={async e => setPhoto(await compressImage(e.target.files[0]))} />
         </div>
-        <h2 className={`text-3xl font-bold text-center ${theme.primaryText} mb-2`}>{registrationCategory} Player Registration</h2>
-        <p className="text-center text-gray-500 mb-8">Join the NPCC Auction Pool</p>
-
-        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm border border-red-200 text-center">{error}</div>}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label><div className="relative"><User className="absolute left-3 top-3 text-gray-400" size={18} /><input required type="text" className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#5c3a21] outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} /></div></div>
-            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Age ({registrationCategory === 'Youth' ? '15 to 35' : '40+'})</label><div className="relative"><input required type="number" min={registrationCategory === 'Youth' ? "15" : "40"} max={registrationCategory === 'Youth' ? "35" : undefined} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#5c3a21] outline-none" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} /></div></div>
-            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Contact Number</label><div className="relative"><Phone className="absolute left-3 top-3 text-gray-400" size={18} /><input required type="tel" className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#5c3a21] outline-none" value={formData.contact} onChange={e => setFormData({...formData, contact: e.target.value})} /></div></div>
-            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label><div className="relative"><Mail className="absolute left-3 top-3 text-gray-400" size={18} /><input required type="email" className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#5c3a21] outline-none" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} /></div></div>
-            <div className="md:col-span-2"><label className="block text-sm font-semibold text-gray-700 mb-1">Native Place</label><div className="relative"><MapPin className="absolute left-3 top-3 text-gray-400" size={18} /><input required type="text" className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#5c3a21] outline-none" value={formData.native} onChange={e => setFormData({...formData, native: e.target.value})} /></div></div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Upload Player Photo</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 relative">
-                {isProcessing ? (<div className="text-gray-500">Processing image...</div>) : photoDataUrl ? (<img src={photoDataUrl} alt="Preview" className="h-32 w-32 object-cover rounded-full border-4 border-white shadow-md mb-2" />) : (<ImageIcon size={40} className="text-gray-400 mb-2" />)}
-                <span className="text-sm text-gray-500 mt-2">{photoDataUrl ? 'Click to change photo' : 'Click to upload a clear face photo'}</span>
-                <input required={!photoDataUrl} type="file" accept="image/*" onChange={handlePhotoChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-              </div>
-            </div>
-          </div>
-          <button type="submit" disabled={isProcessing} className={`w-full ${theme.primary} text-white font-bold py-3 rounded-lg mt-6 hover:bg-[#4a2e1a] transition flex justify-center items-center gap-2 disabled:opacity-50`}>
-            Proceed to Payment <CreditCard size={20} />
-          </button>
-        </form>
-      </div>
+        <button className="w-full bg-[#5c3a21] text-white py-3 rounded font-bold">Proceed to Payment</button>
+      </form>
     );
   };
 
   const RealPayment = () => {
     const [screenshotUrl, setScreenshotUrl] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
     
-    // Direct link to the image you provided
-    const userImgBbLink = "https://ibb.co/gFRrwZ8z";
-    
-    // Dynamic QR generation matching your details precisely
-    const upiId = "bjain6851-1@okaxis";
-    const amount = "500.00";
-    const payeeName = "Bhuvan Jain";
-    const upiUri = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR`;
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiUri)}&margin=10`;
-
-    const handleScreenshotChange = async (e) => {
-      const file = e.target.files[0];
-      if (file) { setScreenshotUrl(await compressImage(file)); }
-    };
+    // Yahan aapka direct QR image link daal diya gaya hai
+    const customQrImage = "https://i.ibb.co/994m8R0W/1000276929.png"; 
 
     const handleCompleteRegistration = async () => {
-      if (!user) {
-        alert("Authentication error. Please refresh the page and try again.");
-        return;
-      }
       setIsSaving(true);
-      
-      const finalPlayer = {
-        ...tempPlayer,
-        paymentStatus: 'Verification Pending',
-        auctionStatus: 'Unsold',
-        team: '-',
-        paymentScreenshot: screenshotUrl
-      };
-
+      setErrorMsg("");
       try {
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'players', tempPlayer.id);
-        await setDoc(docRef, finalPlayer);
-        
-        setIsSaving(false);
+        await setDoc(docRef, { ...tempPlayer, paymentStatus: 'Pending', auctionStatus: 'Unsold', paymentScreenshot: screenshotUrl });
         navigate('email');
-      } catch (error) {
-        console.error("Submission Error:", error);
-        setIsSaving(false);
-        alert(`Database Error: ${error.message}. Please check your Firebase rules.`);
+      } catch (err) { 
+        setErrorMsg("Error: " + err.message); 
       }
+      setIsSaving(false);
     };
 
-    if (!tempPlayer) return <div className="text-center mt-10">Invalid flow. <button onClick={()=>navigate('landing')} className="text-blue-500">Go back</button></div>;
-
     return (
-      <div className="max-w-lg mx-auto mt-8 p-6 bg-white rounded-xl shadow-lg border border-[#e6dcc8] text-center">
-        <h2 className={`text-2xl font-bold ${theme.primaryText} mb-2`}>Complete Registration Payment</h2>
-        <p className="text-gray-600 mb-6">Scan the QR code below using any UPI app to pay the ₹500 entry fee.</p>
+      <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-xl shadow-lg text-center">
+        <h2 className="text-xl font-bold mb-4">Scan & Pay ₹500</h2>
         
-        <div className="bg-[#f4f7fe] p-6 rounded-2xl inline-block shadow-inner mb-4 border border-blue-100">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">B</div>
-            <span className="font-semibold text-gray-800 text-lg">{payeeName}</span>
-          </div>
-          <div className="bg-white p-4 rounded-xl shadow-sm inline-block"><img src={qrCodeUrl} alt="UPI QR Code" className="w-48 h-48 mx-auto" /></div>
-          <div className="mt-4 space-y-1">
-            <p className="text-gray-500 text-sm">UPI ID: <span className="font-medium text-gray-800">{upiId}</span></p>
-            <p className="text-gray-500 text-sm">Amount: <span className="font-bold text-gray-900">₹{amount}</span></p>
-          </div>
+        {errorMsg && <div className="bg-red-100 text-red-600 p-2 mb-4 rounded">{errorMsg}</div>}
+
+        <div className="bg-blue-50 p-4 rounded-xl mb-6 border border-blue-100">
+           <img src={customQrImage} alt="QR Code" className="w-56 mx-auto mb-2 rounded-lg shadow-sm" />
+           <p className="font-bold text-gray-800">Payee: Bhuvan Jain</p>
+           <p className="text-sm text-gray-500">UPI ID: bjain6851-1@okaxis</p>
         </div>
         
-        <div className="mb-6">
-          <a href={userImgBbLink} target="_blank" rel="noreferrer" className="text-blue-600 text-sm flex items-center justify-center gap-1 hover:underline">
-            View Alternate QR Code Image <ExternalLink size={14} />
-          </a>
+        <div className="border-2 border-dashed p-4 mb-4 relative bg-gray-50 cursor-pointer">
+          {screenshotUrl ? <img src={screenshotUrl} className="h-32 mx-auto rounded shadow-sm" /> : <Camera size={40} className="text-gray-400 mx-auto" />}
+          <p className="text-sm text-gray-500 mt-2">{screenshotUrl ? 'Screenshot Uploaded! (Click to change)' : 'Upload Payment Screenshot'}</p>
+          <input type="file" className="absolute inset-0 opacity-0" onChange={async e => setScreenshotUrl(await compressImage(e.target.files[0]))} />
         </div>
 
-        <div className="text-left mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-2 text-center">Step 2: Upload Payment Screenshot</label>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 relative cursor-pointer">
-            {screenshotUrl ? (<img src={screenshotUrl} alt="Screenshot Preview" className="max-h-40 object-contain rounded border border-gray-200 shadow-sm mb-2" />) : (<Camera size={40} className="text-gray-400 mb-2" />)}
-            <span className="text-sm text-gray-500 mt-2 text-center">{screenshotUrl ? 'Click to change screenshot' : 'Attach proof of successful transaction'}</span>
-            <input type="file" accept="image/*" onChange={handleScreenshotChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-          </div>
-        </div>
-
-        <button onClick={handleCompleteRegistration} disabled={!screenshotUrl || isSaving} className={`w-full ${(!screenshotUrl || isSaving) ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} text-white font-bold py-3 rounded-lg transition flex justify-center items-center gap-2`}>
-          {isSaving ? 'Submitting Registration...' : 'Submit Registration'}
-          {!isSaving && <CheckCircle size={20} />}
+        <button onClick={handleCompleteRegistration} disabled={!screenshotUrl || isSaving} className="w-full bg-green-600 text-white py-3 rounded font-bold disabled:bg-gray-400">
+          {isSaving ? "Submitting Registration..." : "Submit Registration"}
         </button>
       </div>
     );
   };
 
-  const EmailConfirmation = () => {
-    if (!tempPlayer) return null;
+  const EmailConfirmation = () => (
+    <div className="max-w-md mx-auto mt-20 text-center">
+      <CheckCircle size={60} className="text-green-500 mx-auto mb-4" />
+      <h2 className="text-2xl font-bold">Submitted Successfully!</h2>
+      <p className="text-gray-600 mt-2">Admin will verify your payment soon.</p>
+      <button onClick={() => navigate('landing')} className="mt-6 text-blue-600 font-bold hover:underline">Go to Home Page</button>
+    </div>
+  );
+
+  const AdminLogin = () => {
+    const [p, setP] = useState('');
+    const handle = (e) => { e.preventDefault(); if(p === 'bababhuvandev') { setIsAdmin(true); navigate('admin-dashboard'); } else { alert("Wrong Password!"); } };
     return (
-      <div className="max-w-2xl mx-auto mt-12">
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle size={32} className="text-blue-600" /></div>
-          <h2 className="text-2xl font-bold text-gray-800">Registration Submitted!</h2>
-          <p className="text-gray-500"
+      <form onSubmit={handle} className="max-w-xs mx-auto mt-20 p-6 bg-white shadow-lg rounded-xl">
+        <h2 className="text-xl font-bold mb-4">Admin Login</h2>
+        <input type="password" placeholder="Password" className="w-full p-2 border rounded mb-4" onChange={e => setP(e.target.value)} />
+        <button className="w-full bg-black text-white p-2 rounded font-bold">Enter</button>
+      </form>
+    );
+  };
+
+  const AdminDashboard = () => {
+    const [viewScreenshot, setViewScreenshot] = useState(null);
+
+    const updatePlayer = async (id, data) => {
+      try {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', id), data);
+      } catch (error) { console.error("Error updating player:", error); }
+    };
+
+    return (
+      <div className="max-w-6xl mx-auto mt-8 p-4">
+        <h2 className="text-3xl font-bold mb-6">Admin Dashboard</h2>
+        <div className="bg-white rounded-xl shadow border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[600px]">
+              <thead className="bg-gray-100"><tr><th className="p-4">Player</th><th className="p-4">Payment</th><th className="p-4">Status</th></tr></thead>
+              <tbody>
+                {players.map(player => (
+                  <tr key={player.id} className="border-b">
+                    <td className="p-4"><div className="flex items-center gap-3"><img src={player.photoUrl} className="w-10 h-10 rounded-full object-cover border" /><div><div className="font-medium text-gray-800">{player.name}</div><div className="text-xs text-gray-500">{player.category} • {player.contact}</div></div></div></td>
+                    <td className="p-4">
+                      {player.paymentStatus === 'Pending' ? (
+                        <div className="flex flex-col gap-2"><span className="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-1 rounded w-max">PENDING</span><button onClick={() => setViewScreenshot(player)} className="text-xs flex items-center gap-1 text-blue-600 border border-blue-200 px-2 py-1 rounded w-max"><Camera size={12}/> View Proof</button></div>
+                      ) : (<span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded w-max">VERIFIED</span>)}
+                    </td>
+                    <td className="p-4"><select disabled={player.paymentStatus !== 'Paid'} className="text-sm border-gray-300 py-1 px-2 rounded" value={player.auctionStatus} onChange={(e) => updatePlayer(player.id, { auctionStatus: e.target.value })}><option value="Unsold">Unsold</option><option value="Sold">Sold</option></select></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {viewScreenshot && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-white p-6 rounded-xl w-full max-w-lg text-center relative">
+              <button onClick={() => setViewScreenshot(null)} className="absolute top-4 right-4 text-gray-500 bg-gray-100 rounded-full p-1"><X size={20}/></button>
+              <h3 className="text-xl font-bold mb-4">Payment Proof</h3>
+              <div className="bg-gray-100 p-2 rounded-lg flex justify-center mb-6">
+                {viewScreenshot.paymentScreenshot ? (<img src={viewScreenshot.paymentScreenshot} className="max-h-[50vh] object-contain rounded" />) : (<p>No screenshot.</p>)}
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setViewScreenshot(null)} className="flex-1 py-3 bg-gray-200 rounded-lg font-bold">Cancel</button>
+                <button onClick={() => { updatePlayer(viewScreenshot.id, { paymentStatus: 'Paid' }); setViewScreenshot(null); }} className="flex-1 py-3 bg-green-600 text-white rounded-lg font-bold">Approve</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  if (!user) return <div className="min-h-screen flex items-center justify-center text-[#5c3a21] font-bold">Loading...</div>;
+
+  return (
+    <div className="min-h-screen bg-[#f8f5f0] font-sans pb-12">
+      <Navbar />
+      <main>
+        {view === 'landing' && <LandingPage />}
+        {view === 'register' && <RegistrationForm />}
+        {view === 'payment' && <RealPayment />}
+        {view === 'email' && <EmailConfirmation />}
+        {view === 'admin-login' && <AdminLogin />}
+        {view === 'admin-dashboard' && <AdminDashboard />}
+      </main>
+    </div>
+  );
+}
+
+
