@@ -95,7 +95,7 @@ function App() {
     let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
     const link = document.createElement("a");
     link.href = encodeURI(csvContent);
-    link.download = `NPCC_Report_${new Date().toLocaleDateString()}.csv`;
+    link.download = `NPCC_Master_Report_${new Date().toLocaleDateString()}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -124,20 +124,20 @@ function App() {
 
   const Landing = () => (
     <div className="max-w-4xl mx-auto mt-12 px-4 text-center pb-20">
-      <h1 className="text-5xl font-black text-[#5c3a21] mb-2 uppercase italic tracking-tighter">NPCC Auction 2026</h1>
+      <h1 className="text-5xl font-black text-[#5c3a21] mb-2 uppercase italic tracking-tighter leading-tight">NPCC Auction 2026</h1>
       <p className="text-gray-500 mb-12 font-bold uppercase text-[10px] tracking-[4px]">Select Category To Register</p>
       
       <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
         <button onClick={() => { setCategory('Youth'); navigate('register'); }} className="bg-white p-8 rounded-[40px] shadow-2xl border-2 border-transparent hover:border-blue-500 transition-all text-left group">
           <Zap className="text-blue-600 mb-4 group-hover:scale-125 transition-transform" size={40} />
           <h2 className="text-2xl font-black mb-1 uppercase italic leading-none">Youth League</h2>
-          <p className="text-gray-400 text-[10px] mb-6 font-black uppercase">15 to 35 Years</p>
+          <p className="text-gray-400 text-[10px] mb-6 font-black uppercase">Ages 15 to 35</p>
           <div className="text-blue-600 font-black flex items-center gap-1 uppercase text-sm underline decoration-blue-200">Register Now</div>
         </button>
         <button onClick={() => { setCategory('40+'); navigate('register'); }} className="bg-white p-8 rounded-[40px] shadow-2xl border-2 border-transparent hover:border-orange-500 transition-all text-left group">
           <Trophy className="text-orange-700 mb-4 group-hover:scale-125 transition-transform" size={40} />
           <h2 className="text-2xl font-black mb-1 uppercase italic leading-none">40+ League</h2>
-          <p className="text-gray-400 text-[10px] mb-6 font-black uppercase tracking-widest">40 Years & Above</p>
+          <p className="text-gray-400 text-[10px] mb-6 font-black uppercase tracking-widest">Ages 40 and Above</p>
           <div className="text-orange-700 font-black flex items-center gap-1 uppercase text-sm underline decoration-orange-200">Register Now</div>
         </button>
       </div>
@@ -146,7 +146,7 @@ function App() {
         onClick={() => navigate('directory')}
         className="mt-16 bg-white border-4 border-[#5c3a21] text-[#5c3a21] px-12 py-5 rounded-full font-black uppercase tracking-widest text-sm hover:bg-[#5c3a21] hover:text-white transition-all shadow-2xl active:scale-95"
       >
-        View Auction Status Pool
+        View Registration & Pool Status
       </button>
     </div>
   );
@@ -157,7 +157,7 @@ function App() {
 
     const handleNext = (e) => {
       e.preventDefault();
-      // DUPLICATE BLOCKING (Check if contact already exists)
+      // Duplicate Blocking
       const isDuplicate = players.some(p => p.contact === form.contact);
       if(isDuplicate) return alert("Error: This mobile number is already registered!");
 
@@ -174,11 +174,11 @@ function App() {
 
     return (
       <form onSubmit={handleNext} className="max-w-xl mx-auto mt-8 p-10 bg-white rounded-[45px] shadow-2xl space-y-6 mx-4 border-b-[10px] border-[#5c3a21]">
-        <h2 className="text-3xl font-black text-center text-[#5c3a21] uppercase italic tracking-tighter underline underline-offset-8 decoration-orange-400">Registration</h2>
+        <h2 className="text-3xl font-black text-center text-[#5c3a21] uppercase italic tracking-tighter underline underline-offset-8 decoration-orange-400">Player Entry</h2>
         <div className="space-y-4">
           <div className="space-y-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Full Name</label>
-            <input required placeholder="ENTER FULL NAME" className="w-full p-4 bg-gray-50 border-2 rounded-2xl font-bold uppercase focus:border-[#5c3a21] outline-none" onChange={e => setForm({...form, name: e.target.value})} />
+            <input required placeholder="ENTER NAME" className="w-full p-4 bg-gray-50 border-2 rounded-2xl font-bold uppercase focus:border-[#5c3a21] outline-none" onChange={e => setForm({...form, name: e.target.value})} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
@@ -192,12 +192,12 @@ function App() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Contact Number</label>
-              <input required placeholder="MOBILE NUMBER" className="w-full p-4 bg-gray-50 border-2 rounded-2xl font-bold focus:border-[#5c3a21] outline-none" onChange={e => setForm({...form, contact: e.target.value})} />
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Contact</label>
+              <input required placeholder="NUMBER" className="w-full p-4 bg-gray-50 border-2 rounded-2xl font-bold focus:border-[#5c3a21] outline-none" onChange={e => setForm({...form, contact: e.target.value})} />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Native Place</label>
-              <input required placeholder="CITY/TOWN" className="w-full p-4 bg-gray-50 border-2 rounded-2xl font-bold uppercase focus:border-[#5c3a21] outline-none" onChange={e => setForm({...form, native: e.target.value})} />
+              <input required placeholder="CITY" className="w-full p-4 bg-gray-50 border-2 rounded-2xl font-bold uppercase focus:border-[#5c3a21] outline-none" onChange={e => setForm({...form, native: e.target.value})} />
             </div>
           </div>
         </div>
@@ -207,7 +207,7 @@ function App() {
           ) : (
             <div className="text-gray-300 font-black flex flex-col items-center gap-2">
               <Camera size={40}/>
-              <span className="text-[10px] tracking-[4px]">UPLOAD PLAYER PHOTO</span>
+              <span className="text-[10px] tracking-[4px]">UPLOAD PROFILE PHOTO</span>
             </div>
           )}
           <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async e => setPhoto(await compressImage(e.target.files[0]))} />
@@ -220,6 +220,7 @@ function App() {
   const Payment = () => {
     const [ss, setSs] = useState(null);
     const [saving, setSaving] = useState(false);
+    // Flexible UPI from your screenshot: bjain6851@okaxis
     const upiId = "bjain6851@okaxis";
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`upi://pay?pa=${upiId}&pn=Bhuvan%20Jain&cu=INR`)}`;
 
@@ -243,12 +244,12 @@ function App() {
 
     return (
       <div className="max-w-md mx-auto mt-8 p-8 bg-white rounded-[50px] shadow-2xl text-center border-t-[10px] border-green-500 mx-4">
-        <h2 className="text-3xl font-black text-gray-800 mb-6 italic tracking-tighter uppercase underline decoration-green-300">Registration Payment</h2>
+        <h2 className="text-3xl font-black text-gray-800 mb-6 italic tracking-tighter uppercase underline decoration-green-300 leading-tight">Payment Verification</h2>
         <div className="bg-blue-50 p-6 rounded-[35px] mb-8 shadow-inner border-2 border-blue-100">
           <img src={qrUrl} className="w-64 mx-auto mb-4 rounded-3xl shadow-2xl bg-white p-3 border-4 border-white shadow-xl" alt="QR" />
           <p className="font-black text-gray-700 text-xl tracking-tight uppercase">Bhuvan Jain</p>
           <p className="text-[11px] font-black text-blue-600 bg-blue-100 py-1 px-3 rounded-full inline-block mt-3 tracking-widest uppercase italic">{upiId}</p>
-          <p className="mt-4 text-xs font-bold text-gray-500 italic">Scan to pay the registration fee</p>
+          <p className="mt-4 text-xs font-bold text-gray-400 italic">Scan to pay the entry fee</p>
         </div>
         <div className="border-4 border-dotted p-6 relative bg-gray-50 rounded-3xl cursor-pointer mb-8 border-gray-200">
           {ss ? (
@@ -273,9 +274,9 @@ function App() {
       <div className="max-w-6xl mx-auto mt-8 p-6 pb-20">
         <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
            <h2 className="text-4xl font-black text-[#5c3a21] uppercase italic tracking-tighter underline decoration-[#5c3a21]/20">Auction Pool</h2>
-           <div className="flex bg-white p-1.5 rounded-full border shadow-2xl overflow-hidden border-gray-100">
+           <div className="flex bg-white p-1.5 rounded-full border shadow-2xl border-gray-100 overflow-hidden">
              {['All', 'Youth', '40+'].map(t => (
-               <button key={t} onClick={() => setFilterType(t)} className={`px-8 py-2.5 rounded-full font-black text-xs uppercase transition-all ${filterType === t ? 'bg-[#5c3a21] text-white shadow-xl scale-105' : 'text-gray-400'}`}>{t}</button>
+               <button key={t} onClick={() => setFilterType(t)} className={`px-8 py-2.5 rounded-full font-black text-xs uppercase transition-all ${filterType === t ? 'bg-[#5c3a21] text-white shadow-xl scale-105' : 'text-gray-400 hover:text-black'}`}>{t}</button>
              ))}
            </div>
         </div>
@@ -292,16 +293,14 @@ function App() {
               <div className="p-8">
                 <h3 className="font-black text-2xl text-[#5c3a21] italic uppercase leading-none mb-1 tracking-tighter">{p.name}</h3>
                 <p className="text-[11px] font-black text-gray-400 uppercase tracking-[3px] mb-2">{p.native} • {p.age} Years</p>
-                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center justify-center gap-1">
-                  <Calendar size={10}/> DOB: {p.dob || "N/A"}
-                </p>
+                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center justify-center gap-1"><Calendar size={10}/> DOB: {p.dob || "N/A"}</p>
                 <div className={`p-3 rounded-2xl text-center font-black text-[10px] uppercase tracking-widest shadow-inner border-2 ${p.auctionStatus === 'Sold' ? 'bg-green-50 border-green-200 text-green-700 italic' : 'bg-gray-50 border-gray-100 text-gray-400'}`}>
                   {p.auctionStatus === 'Sold' ? `TEAM: ${p.team}` : 'UNSOLD'}
                 </div>
               </div>
             </div>
           ))}
-          {list.length === 0 && <div className="col-span-full py-20 text-center font-black text-gray-300 animate-pulse uppercase tracking-[8px]">Syncing Data...</div>}
+          {list.length === 0 && <div className="col-span-full py-20 text-center font-black text-gray-300 animate-pulse uppercase tracking-[8px]">Syncing Database Pool...</div>}
         </div>
       </div>
     );
@@ -318,7 +317,7 @@ function App() {
     return (
       <div className="max-w-7xl mx-auto mt-10 p-4 pb-40">
         <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 px-4">
-           <h2 className="text-4xl font-black text-[#5c3a21] uppercase italic tracking-tighter underline decoration-orange-400">Admin Control</h2>
+           <h2 className="text-4xl font-black text-[#5c3a21] uppercase italic tracking-tighter underline decoration-orange-400 underline-offset-8">Admin Control</h2>
            <button onClick={exportData} className="flex items-center gap-3 bg-green-600 text-white px-10 py-4 rounded-full font-black text-sm shadow-2xl hover:bg-green-700 active:scale-95 transition-all">
              <FileSpreadsheet size={22}/> DOWNLOAD DATA SHEET
            </button>
@@ -363,7 +362,7 @@ function App() {
           <div className="fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[999] backdrop-blur-xl">
             <div className="bg-white p-10 rounded-[60px] w-full max-w-lg text-center relative shadow-2xl border-8 border-orange-50 animate-in zoom-in duration-200">
               <button onClick={() => setSel(null)} className="absolute -top-6 -right-6 bg-[#5c3a21] text-white rounded-full p-4 shadow-2xl active:scale-90 transition-all"><X size={28}/></button>
-              <h3 className="font-black text-2xl mb-8 text-[#5c3a21] italic uppercase underline decoration-orange-400 tracking-tighter">Proof Image</h3>
+              <h3 className="font-black text-2xl mb-8 text-[#5c3a21] italic uppercase underline decoration-orange-400 tracking-tighter italic leading-none">Proof Review</h3>
               <div className="bg-gray-100 p-3 rounded-[40px] mb-10 border-4 border-gray-50 shadow-inner overflow-hidden"><img src={sel.screenshot} className="max-h-[450px] mx-auto rounded-[30px] shadow-2xl object-contain" /></div>
               <div className="flex gap-4">
                 <button onClick={() => setSel(null)} className="flex-1 py-5 bg-gray-100 rounded-[30px] font-black text-gray-400 italic">CLOSE</button>
@@ -381,13 +380,13 @@ function App() {
     return (
       <div className="max-w-md mx-auto mt-20 p-12 bg-white shadow-2xl rounded-[50px] border-t-[10px] border-[#5c3a21] text-center mx-4">
         <Shield size={60} className="mx-auto text-[#5c3a21] mb-8" />
-        <h2 className="text-3xl font-black mb-10 uppercase tracking-tighter italic">Admin Portal</h2>
-        <input type="password" placeholder="ENTER SECRET KEY" className="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-3xl text-center font-black text-2xl mb-8 tracking-widest shadow-inner focus:border-[#5c3a21] outline-none" onChange={e => {if(e.target.value === 'bababhuvandev') {setIsAdmin(true); navigate('admin-dashboard')}}} />
+        <h2 className="text-3xl font-black mb-10 uppercase tracking-tighter italic">Admin Authentication</h2>
+        <input type="password" placeholder="ENTER SECRET KEY" className="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-3xl text-center font-black text-2xl mb-8 tracking-widest shadow-inner focus:border-[#5c3a21] outline-none" onChange={e => {if(e.target.value === 'bababhuvandev') {setIsAdmin(true); navigate('admin')}}} />
       </div>
     );
   };
 
-  if (loading) return <div className="h-screen flex flex-col items-center justify-center bg-[#f8f5f0] text-[#5c3a21] font-black tracking-widest uppercase text-xs italic animate-pulse"><RefreshCcw className="animate-spin mb-6" size={60}/><p>Accessing NPCC Cloud Database...</p></div>;
+  if (loading) return <div className="h-screen flex flex-col items-center justify-center bg-[#f8f5f0] text-[#5c3a21] font-black tracking-widest uppercase text-xs italic animate-pulse font-black italic"><RefreshCcw className="animate-spin mb-6" size={60}/><p>ACCESSING NPCC CLOUD DATABASE...</p></div>;
 
   return (
     <div className="min-h-screen bg-[#f8f5f0] font-sans pb-10">
@@ -398,13 +397,13 @@ function App() {
         {view === 'payment' && <Payment />}
         {view === 'directory' && <PlayerDirectory />}
         {view === 'admin-login' && <AdminLogin />}
-        {view === 'admin-dashboard' && <AdminDashboard />}
+        {view === 'admin' && <AdminDashboard />}
         {view === 'success' && (
           <div className="max-w-md mx-auto mt-20 text-center p-12 bg-white rounded-[60px] shadow-2xl mx-4 border-b-[10px] border-green-500">
             <CheckCircle size={80} className="text-green-500 mx-auto mb-8 animate-bounce" />
-            <h2 className="text-4xl font-black text-gray-800 italic uppercase underline underline-offset-8">Sent!</h2>
-            <p className="text-gray-400 mt-6 font-bold text-sm uppercase tracking-widest italic tracking-tighter leading-relaxed">Your data has been saved successfully.<br/>Admin will verify your payment shortly.</p>
-            <button onClick={() => navigate('directory')} className="mt-12 w-full bg-[#5c3a21] text-white py-5 rounded-[30px] font-black uppercase italic shadow-2xl tracking-tighter">View Auction Pool</button>
+            <h2 className="text-4xl font-black text-gray-800 italic uppercase underline underline-offset-8 decoration-green-200">Sent!</h2>
+            <p className="text-gray-400 mt-6 font-bold text-sm uppercase tracking-widest italic tracking-tighter leading-relaxed">Your data has been saved successfully.<br/>Admin will verify your entry shortly.</p>
+            <button onClick={() => navigate('directory')} className="mt-12 w-full bg-[#5c3a21] text-white py-5 rounded-[30px] font-black uppercase italic shadow-2xl tracking-tighter">View Pool</button>
           </div>
         )}
       </main>
