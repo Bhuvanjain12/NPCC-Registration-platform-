@@ -321,4 +321,22 @@ export default function App() {
     );
   };
 
-  if (loading) return <div className="h-screen flex flex-col items-center justify-c
+  if (loading) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center text-xl font-black">
+        Loading...
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Navbar />
+      {view === 'landing' && <Landing />}
+      {view === 'register' && <Register />}
+      {view === 'payment' && <Payment />}
+      {view === 'directory' && <PlayerDirectory />}
+      {view === 'admin-login' && <AdminDashboard />}
+    </>
+  );
+}
