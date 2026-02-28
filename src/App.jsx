@@ -29,7 +29,7 @@ const appId = "npcc-registration-platform";
 const COLLECTION_PATH = ['artifacts', appId, 'public', 'data', 'players'];
 const SETTINGS_DOC_PATH = ['artifacts', appId, 'public', 'data', 'settings', 'registrationControl'];
 
-// Aggressive Image Compression (Crucial for Speed)
+// Extreme Compression for Maximum Speed
 const compressImage = (file, isScreenshot = false) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -40,20 +40,13 @@ const compressImage = (file, isScreenshot = false) => {
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        const MAX_SIZE = isScreenshot ? 500 : 250; 
+        const MAX_SIZE = isScreenshot ? 450 : 220; 
         let width = img.width;
         let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-        } else {
-          if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
+        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+        else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+        canvas.width = width; canvas.height = height;
         ctx.drawImage(img, 0, 0, width, height);
-        // Using very low quality (0.3) for profile pics to ensure high capacity storage
         resolve(canvas.toDataURL('image/jpeg', isScreenshot ? 0.5 : 0.3));
       };
       img.onerror = reject;
@@ -62,7 +55,7 @@ const compressImage = (file, isScreenshot = false) => {
   });
 };
 
-// --- SUB-COMPONENTS (DEFINED OUTSIDE TO PREVENT RE-RENDER LAG) ---
+// --- SUB-COMPONENTS (DEFINED OUTSIDE TO PREVENT RE-RENDER FOCUS BUG) ---
 
 const Navbar = memo(({ navigate, isAdmin, setIsAdmin }) => (
   <nav className="bg-white/90 backdrop-blur-xl p-4 shadow-xl sticky top-0 z-50 border-b border-pink-100">
@@ -71,15 +64,13 @@ const Navbar = memo(({ navigate, isAdmin, setIsAdmin }) => (
         <div className="w-10 h-10 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg rotate-3">
           <Palette size={20} />
         </div>
-        <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 hidden sm:block uppercase tracking-tighter font-black">DHULANDI CUP</span>
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 hidden sm:block uppercase font-black">DHULANDI CUP</span>
         <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 sm:hidden uppercase tracking-tighter">NPCC</span>
       </div>
       <div className="flex gap-4 text-xs font-black uppercase tracking-widest items-center">
-        <button onClick={() => navigate('directory')} className="text-purple-600 hover:text-pink-500 transition-colors">The Pool</button>
+        <button onClick={() => navigate('directory')} className="text-purple-600 hover:text-pink-500">Directory</button>
         {!isAdmin ? (
-          <button onClick={() => navigate('admin-login')} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-5 py-2.5 rounded-full shadow-lg hover:shadow-pink-200 transition-all flex items-center gap-2 active:scale-95">
-            <Shield size={14} /> Admin
-          </button>
+          <button onClick={() => navigate('admin-login')} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-5 py-2 rounded-full shadow-lg text-[10px]">Admin</button>
         ) : (
           <button onClick={() => {setIsAdmin(false); navigate('landing');}} className="text-red-500 font-black">EXIT</button>
         )}
@@ -90,7 +81,7 @@ const Navbar = memo(({ navigate, isAdmin, setIsAdmin }) => (
 
 const Landing = memo(({ navigate, setCategory, regControl }) => (
   <div className="max-w-6xl mx-auto mt-12 px-4 text-center pb-24 relative">
-    <div className="mb-6 inline-flex items-center gap-2 bg-gradient-to-r from-pink-100 to-purple-100 text-purple-700 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] shadow-sm">
+    <div className="mb-6 inline-flex items-center gap-2 bg-gradient-to-r from-pink-50 to-purple-50 text-purple-700 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] shadow-sm border border-white">
       <Sparkles size={14} className="text-pink-500 animate-pulse"/> Season 2026 Live
     </div>
     <h1 className="text-6xl md:text-9xl font-black text-slate-900 mb-6 uppercase tracking-tighter leading-[0.85]">
@@ -106,26 +97,26 @@ const Landing = memo(({ navigate, setCategory, regControl }) => (
       <button 
         disabled={!regControl.youthOpen}
         onClick={() => { setCategory('Youth'); navigate('register'); }} 
-        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.youthOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-pink-300 shadow-pink-100'}`}
+        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.youthOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-pink-300'}`}
       >
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-pink-50 rounded-full"></div>
         <Zap className={`${!regControl.youthOpen ? 'text-gray-400' : 'text-pink-600'} mb-10 relative z-10`} size={56} />
         <h2 className="text-5xl font-black mb-10 relative z-10 text-slate-800 uppercase italic leading-none">Youth Pool</h2>
         <div className={`${!regControl.youthOpen ? 'bg-gray-400' : 'bg-pink-600'} text-white w-max px-8 py-3 rounded-full font-black flex items-center gap-2 uppercase text-xs relative z-10 shadow-lg`}>
-          {regControl.youthOpen ? 'Register' : 'Closed'} <ArrowRight size={16}/>
+          {regControl.youthOpen ? 'Register Now' : 'Closed'} <ArrowRight size={16}/>
         </div>
       </button>
 
       <button 
         disabled={!regControl.fortyPlusOpen}
         onClick={() => { setCategory('40+'); navigate('register'); }} 
-        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.fortyPlusOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-purple-300 shadow-purple-100'}`}
+        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.fortyPlusOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-purple-300'}`}
       >
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-purple-50 rounded-full"></div>
         <Trophy className={`${!regControl.fortyPlusOpen ? 'text-gray-400' : 'text-purple-600'} mb-10 relative z-10`} size={56} />
         <h2 className="text-5xl font-black mb-10 relative z-10 text-slate-800 uppercase italic leading-none">40+ League</h2>
         <div className={`${!regControl.fortyPlusOpen ? 'bg-gray-400' : 'bg-purple-600'} text-white w-max px-8 py-3 rounded-full font-black flex items-center gap-2 uppercase text-xs relative z-10 shadow-lg`}>
-          {regControl.fortyPlusOpen ? 'Register' : 'Closed'} <ArrowRight size={16}/>
+          {regControl.fortyPlusOpen ? 'Register Now' : 'Closed'} <ArrowRight size={16}/>
         </div>
       </button>
     </div>
@@ -153,8 +144,9 @@ const PlayerCard = memo(({ p }) => (
       </div>
     </div>
     <div className="p-10 text-center bg-white">
-      <h3 className="font-black text-3xl text-slate-800 uppercase leading-none mb-3 tracking-tighter italic">{p.name}</h3>
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">{p.native} • {p.age} Yrs</p>
+      <h3 className="font-black text-4xl text-slate-800 uppercase leading-none mb-3 tracking-tighter italic">{p.name}</h3>
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{p.native} • {p.age} Yrs</p>
+      <p className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em] mb-6 italic">DOB: {p.dob || "N/A"}</p>
       <div className={`py-4 px-6 rounded-full text-center font-black text-[10px] uppercase tracking-[0.2em] border-2 transition-all ${p.auctionStatus === 'Sold' ? 'bg-emerald-50 border-emerald-100 text-emerald-600 italic' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>
         {p.auctionStatus === 'Sold' ? `TEAM: ${p.team}` : 'IN POOL'}
       </div>
@@ -173,15 +165,15 @@ const PlayerDirectory = ({ players, filterType, setFilterType, searchTerm, setSe
 
   return (
     <div className="max-w-7xl mx-auto mt-12 p-6 pb-32">
-      <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-10">
-         <div className="text-center md:text-left">
+      <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-10 text-center md:text-left">
+         <div>
             <h2 className="text-7xl font-black text-slate-900 uppercase italic tracking-tighter leading-none mb-4">THE POOL</h2>
-            <p className="text-pink-500 font-black uppercase tracking-[0.4em] text-[10px] flex items-center gap-3">
-              <span className="w-12 h-1 bg-pink-500 rounded-full"></span> CHAMPIONSHIP CANDIDATES
+            <p className="text-pink-500 font-black uppercase tracking-[0.4em] text-[10px] flex items-center justify-center md:justify-start gap-3 italic">
+              <span className="w-12 h-1 bg-pink-500 rounded-full hidden md:block"></span> DHULANDI CUP 2026
             </p>
          </div>
          <div className="flex flex-col gap-5 w-full md:w-auto">
-           <div className="relative group">
+           <div className="relative">
              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-pink-400" size={20} />
              <input type="text" placeholder="FIND A PLAYER..." className="bg-white border-2 border-slate-100 rounded-full pl-16 pr-8 py-5 w-full md:w-96 font-black text-xs tracking-widest focus:border-pink-500 outline-none shadow-2xl transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
            </div>
@@ -212,7 +204,7 @@ const AdminDashboard = ({ players, exportData, upd, regControl, updateControl })
 
       <div className="bg-white p-10 rounded-[3rem] shadow-2xl mb-16 border border-pink-100">
         <h3 className="text-2xl font-black text-slate-800 uppercase italic mb-8 flex items-center gap-3">
-          <Activity className="text-pink-500" /> Registration Switch
+          <Activity className="text-pink-500" /> Registration Status
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
            <div className="bg-slate-50 p-6 rounded-[2rem] flex items-center justify-between border-2 border-transparent hover:border-pink-200 transition-all">
@@ -232,7 +224,7 @@ const AdminDashboard = ({ players, exportData, upd, regControl, updateControl })
         </div>
       </div>
 
-      <div className="bg-white rounded-[4rem] shadow-2xl border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-[4rem] shadow-2xl border border-slate-100 overflow-hidden text-center">
         <div className="overflow-x-auto">
           <table className="w-full text-left min-w-[1200px]">
             <thead className="bg-slate-50 border-b-2 font-black text-[10px] uppercase tracking-[0.2em] text-slate-400">
@@ -246,7 +238,7 @@ const AdminDashboard = ({ players, exportData, upd, regControl, updateControl })
                       <img src={p.photoUrl} className="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-xl transition-all group-hover:scale-110" alt="" />
                       <div>
                         <div className="font-black text-slate-900 uppercase text-2xl italic tracking-tighter leading-none mb-2">{p.name}</div>
-                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{p.contact} • {p.native}</div>
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{p.contact} • {p.native} • {p.dob}</div>
                       </div>
                     </div>
                   </td>
@@ -280,7 +272,7 @@ const AdminDashboard = ({ players, exportData, upd, regControl, updateControl })
             <button onClick={() => setSel(null)} className="absolute -top-5 -right-5 bg-white text-slate-900 rounded-full p-5 shadow-2xl hover:scale-110 transition-all"><X size={28}/></button>
             <h3 className="font-black text-4xl mb-10 italic uppercase underline decoration-pink-500 tracking-tighter italic">Proof Review</h3>
             <div className="bg-slate-50 p-6 rounded-[3.5rem] mb-12 flex items-center justify-center min-h-[400px]">
-              {sel.screenshot ? <img src={sel.screenshot} className="max-h-[500px] w-full object-contain rounded-3xl" alt="Proof" /> : <div className="text-slate-300 font-black tracking-[0.5em]">NO DATA</div>}
+              {sel.screenshot ? <img src={sel.screenshot} className="max-h-[500px] w-full object-contain rounded-3xl shadow-2xl" alt="Proof" /> : <div className="text-slate-300 font-black tracking-[0.5em]">NO DATA</div>}
             </div>
             <button onClick={async () => { await upd(sel.id, { paymentStatus: 'Paid' }); setSel(null); }} className="w-full py-7 bg-emerald-600 text-white rounded-full font-black shadow-2xl uppercase tracking-widest text-xs hover:bg-emerald-700 transition-all">Verify & Approve</button>
           </div>
@@ -344,7 +336,7 @@ export default function App() {
     let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
     const link = document.createElement("a");
     link.href = encodeURI(csvContent);
-    link.download = `NPCC_Master_Data.csv`;
+    link.download = `NPCC_Dhulandi_Cup_Master_Data.csv`;
     link.click();
   };
 
@@ -391,20 +383,20 @@ export default function App() {
             navigate('payment');
           }} className="max-w-2xl mx-auto mt-12 p-12 bg-white rounded-[4rem] shadow-2xl space-y-10 mx-4 border border-pink-50">
             <h2 className="text-4xl font-black text-slate-800 uppercase italic text-center underline decoration-pink-300">Registration</h2>
-            <div className="space-y-6">
-              <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">Full Name</label>
+            <div className="space-y-6 text-left">
+              <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">Full Player Name</label>
               <input name="name" required placeholder="NAME" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold uppercase focus:border-pink-500 border-2 border-transparent outline-none transition-all shadow-inner" /></div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">Age</label>
-                <input name="age" required type="number" placeholder="AGE" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold focus:border-pink-500 outline-none transition-all shadow-inner" /></div>
+                <input name="age" required type="number" placeholder="AGE" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold focus:border-pink-500 outline-none transition-all shadow-inner border-2 border-transparent" /></div>
                 <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">DOB</label>
-                <input name="dob" required type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => !e.target.value && (e.target.type = 'text')} placeholder="mm/dd/yyyy" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold focus:border-pink-500 outline-none transition-all shadow-inner" /></div>
+                <input name="dob" required type="date" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold focus:border-pink-500 outline-none transition-all shadow-inner border-2 border-transparent" placeholder="mm/dd/yyyy" /></div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">WhatsApp No.</label>
-                <input name="contact" required placeholder="NUMBER" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold focus:border-pink-500 outline-none transition-all shadow-inner" /></div>
+                <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">WhatsApp Number</label>
+                <input name="contact" required placeholder="NUMBER" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold focus:border-pink-500 outline-none transition-all shadow-inner border-2 border-transparent" /></div>
                 <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">Native in Rajasthan</label>
-                <input name="native" required placeholder="CITY/TOWN" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold uppercase focus:border-pink-500 outline-none transition-all shadow-inner" /></div>
+                <input name="native" required placeholder="CITY/TOWN" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold uppercase focus:border-pink-500 outline-none transition-all shadow-inner border-2 border-transparent" /></div>
               </div>
             </div>
             <div className="bg-pink-50/50 p-8 rounded-[2.5rem] border border-pink-100 text-center">
@@ -433,7 +425,7 @@ export default function App() {
           <div className="max-w-xl mx-auto mt-12 p-12 bg-white rounded-[4rem] shadow-2xl text-center border-t-[15px] border-pink-500 mx-4">
              <h2 className="text-3xl font-black text-slate-800 mb-8 italic tracking-tighter uppercase leading-none underline decoration-pink-200">Pay 600 using this QR</h2>
              <div className="bg-gradient-to-b from-pink-50 to-white p-12 rounded-[3.5rem] mb-10 border border-pink-100 shadow-inner">
-               <div className="bg-white p-4 rounded-3xl shadow-2xl inline-block mb-8">
+               <div className="bg-white p-4 rounded-3xl shadow-2xl inline-block mb-8 rotate-1">
                  <img src="https://i.ibb.co/6RTPXNKM/1000277092.png" className="w-64 h-auto rounded-xl" alt="QR" />
                </div>
                <p className="font-black text-slate-800 text-2xl uppercase mb-1 tracking-tighter leading-none">Bhuvan Jain</p>
@@ -463,8 +455,8 @@ export default function App() {
         {view === 'success' && (
           <div className="max-w-xl mx-auto mt-24 text-center p-20 bg-white rounded-[6rem] shadow-2xl mx-4 border-b-8 border-emerald-500">
             <CheckCircle size={64} className="mx-auto text-emerald-500 mb-10 animate-bounce" />
-            <h2 className="text-6xl font-black text-slate-900 italic uppercase tracking-tighter leading-[0.8] mb-8 underline decoration-emerald-200">Registered!</h2>
-            <button onClick={() => navigate('directory')} className="w-full bg-slate-900 text-white py-8 rounded-full font-black uppercase italic tracking-widest text-xs shadow-2xl">View Directory</button>
+            <h2 className="text-6xl font-black text-slate-900 italic uppercase leading-[0.8] mb-8 underline decoration-emerald-200">Registered!</h2>
+            <button onClick={() => navigate('directory')} className="w-full bg-slate-900 text-white py-8 rounded-full font-black uppercase italic tracking-widest text-xs shadow-2xl hover:-translate-y-1 transition-all">Check Live Directory</button>
           </div>
         )}
       </main>
