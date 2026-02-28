@@ -29,7 +29,7 @@ const appId = "npcc-registration-platform";
 const COLLECTION_PATH = ['artifacts', appId, 'public', 'data', 'players'];
 const SETTINGS_DOC_PATH = ['artifacts', appId, 'public', 'data', 'settings', 'registrationControl'];
 
-// Aggressive Compression for Speed & Capacity
+// Aggressive Image Compression (Optimized for 1000+ users)
 const compressImage = (file, isScreenshot = false) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -40,7 +40,7 @@ const compressImage = (file, isScreenshot = false) => {
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        const MAX_SIZE = isScreenshot ? 450 : 220; 
+        const MAX_SIZE = isScreenshot ? 400 : 200; 
         let width = img.width;
         let height = img.height;
         if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
@@ -55,7 +55,7 @@ const compressImage = (file, isScreenshot = false) => {
   });
 };
 
-// --- SUB-COMPONENTS (OUTSIDE TO FIX FOCUS BUG) ---
+// --- SUB-COMPONENTS (FIXED FOCUS BUG) ---
 
 const Navbar = memo(({ navigate, isAdmin, setIsAdmin }) => (
   <nav className="bg-white/95 backdrop-blur-xl p-4 shadow-xl sticky top-0 z-50 border-b border-pink-100">
@@ -68,7 +68,7 @@ const Navbar = memo(({ navigate, isAdmin, setIsAdmin }) => (
         <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 sm:hidden uppercase tracking-tighter">NPCC</span>
       </div>
       <div className="flex gap-4 text-xs font-black uppercase tracking-widest items-center">
-        <button onClick={() => navigate('directory')} className="text-purple-600 hover:text-pink-500">Directory</button>
+        <button onClick={() => navigate('directory')} className="text-purple-600 hover:text-pink-500 transition-colors">Directory</button>
         {!isAdmin ? (
           <button onClick={() => navigate('admin-login')} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-5 py-2 rounded-full shadow-lg text-[10px]">Admin</button>
         ) : (
@@ -91,32 +91,30 @@ const Landing = memo(({ navigate, setCategory, regControl }) => (
       </span>
     </h1>
     <p className="text-slate-500 mb-16 font-bold text-lg max-w-2xl mx-auto uppercase tracking-widest italic opacity-80 leading-relaxed">
-      Cricket of Colors • Professional Championship
+      Cricket of Colors • Celebrate the Spirit
     </p>
     <div className="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto">
-      {/* Youth Button */}
       <button 
         disabled={!regControl.youthOpen}
         onClick={() => { setCategory('Youth'); navigate('register'); }} 
-        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.youthOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-pink-300'}`}
+        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.youthOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-pink-300 shadow-pink-50'}`}
       >
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-pink-50 rounded-full"></div>
         <Zap className={`${!regControl.youthOpen ? 'text-gray-400' : 'text-pink-600'} mb-10 relative z-10`} size={56} />
-        <h2 className="text-5xl font-black mb-10 relative z-10 text-slate-800 uppercase italic leading-none">Youth Pool</h2>
+        <h2 className="text-5xl font-black mb-12 relative z-10 text-slate-800 uppercase italic leading-none tracking-tighter">Youth Pool</h2>
         <div className={`${!regControl.youthOpen ? 'bg-gray-400' : 'bg-pink-600'} text-white w-max px-8 py-3 rounded-full font-black flex items-center gap-2 uppercase text-xs relative z-10 shadow-lg`}>
           {regControl.youthOpen ? 'Register Now' : 'Closed'} <ArrowRight size={16}/>
         </div>
       </button>
 
-      {/* 40+ Button */}
       <button 
         disabled={!regControl.fortyPlusOpen}
         onClick={() => { setCategory('40+'); navigate('register'); }} 
-        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.fortyPlusOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-purple-300'}`}
+        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.fortyPlusOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-purple-300 shadow-purple-50'}`}
       >
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-purple-50 rounded-full"></div>
         <Trophy className={`${!regControl.fortyPlusOpen ? 'text-gray-400' : 'text-purple-600'} mb-10 relative z-10`} size={56} />
-        <h2 className="text-5xl font-black mb-10 relative z-10 text-slate-800 uppercase italic leading-none">40+ League</h2>
+        <h2 className="text-5xl font-black mb-12 relative z-10 text-slate-800 uppercase italic leading-none tracking-tighter">40+ League</h2>
         <div className={`${!regControl.fortyPlusOpen ? 'bg-gray-400' : 'bg-purple-600'} text-white w-max px-8 py-3 rounded-full font-black flex items-center gap-2 uppercase text-xs relative z-10 shadow-lg`}>
           {regControl.fortyPlusOpen ? 'Register Now' : 'Closed'} <ArrowRight size={16}/>
         </div>
@@ -148,7 +146,7 @@ const PlayerCard = memo(({ p }) => (
     <div className="p-10 text-center bg-white">
       <h3 className="font-black text-4xl text-slate-800 uppercase leading-none mb-3 tracking-tighter italic">{p.name}</h3>
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{p.native} • {p.age} Yrs</p>
-      <p className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em] mb-6 italic leading-none">DOB: {p.dob || "N/A"}</p>
+      <p className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em] mb-6 italic">DOB: {p.dob || "N/A"}</p>
       <div className={`py-4 px-6 rounded-full text-center font-black text-[10px] uppercase tracking-[0.2em] border-2 transition-all ${p.auctionStatus === 'Sold' ? 'bg-emerald-50 border-emerald-100 text-emerald-600 italic' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>
         {p.auctionStatus === 'Sold' ? `TEAM: ${p.team}` : 'IN POOL'}
       </div>
@@ -205,20 +203,18 @@ const AdminDashboard = ({ players, exportData, upd, regControl, updateControl })
       </div>
 
       <div className="bg-white p-10 rounded-[3rem] shadow-2xl mb-16 border border-pink-100">
-        <h3 className="text-2xl font-black text-slate-800 uppercase italic mb-8 flex items-center gap-3">
-          <Activity className="text-pink-500" /> Registration Switch
-        </h3>
+        <h3 className="text-2xl font-black text-slate-800 uppercase italic mb-8 flex items-center gap-3 underline decoration-pink-300">Registration Control</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
            <div className="bg-slate-50 p-6 rounded-[2rem] flex items-center justify-between border-2 border-transparent hover:border-pink-200 transition-all">
              <div><p className="font-black text-slate-800 uppercase text-lg italic leading-none">Youth Pool</p>
-             <p className={`text-[10px] font-bold uppercase tracking-widest ${regControl.youthOpen ? 'text-emerald-500' : 'text-red-500'}`}>Currently {regControl.youthOpen ? 'Open' : 'Closed'}</p></div>
+             <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 ${regControl.youthOpen ? 'text-emerald-500' : 'text-red-500'}`}>Currently {regControl.youthOpen ? 'Open' : 'Closed'}</p></div>
              <button onClick={() => updateControl('youthOpen', !regControl.youthOpen)} className="active:scale-90 transition-all">
                {regControl.youthOpen ? <ToggleRight size={48} className="text-emerald-500" /> : <ToggleLeft size={48} className="text-slate-300" />}
              </button>
            </div>
            <div className="bg-slate-50 p-6 rounded-[2rem] flex items-center justify-between border-2 border-transparent hover:border-purple-200 transition-all">
              <div><p className="font-black text-slate-800 uppercase text-lg italic leading-none">40+ League</p>
-             <p className={`text-[10px] font-bold uppercase tracking-widest ${regControl.fortyPlusOpen ? 'text-emerald-500' : 'text-red-500'}`}>Currently {regControl.fortyPlusOpen ? 'Open' : 'Closed'}</p></div>
+             <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 ${regControl.fortyPlusOpen ? 'text-emerald-500' : 'text-red-500'}`}>Currently {regControl.fortyPlusOpen ? 'Open' : 'Closed'}</p></div>
              <button onClick={() => updateControl('fortyPlusOpen', !regControl.fortyPlusOpen)} className="active:scale-90 transition-all">
                {regControl.fortyPlusOpen ? <ToggleRight size={48} className="text-emerald-500" /> : <ToggleLeft size={48} className="text-slate-300" />}
              </button>
@@ -256,10 +252,10 @@ const AdminDashboard = ({ players, exportData, upd, regControl, updateControl })
                   </td>
                   <td className="p-12">
                     <div className="flex items-center gap-6 justify-center">
-                      <select className="bg-slate-50 border-2 border-transparent rounded-[1.5rem] p-4 font-black text-[10px] uppercase outline-none focus:border-pink-500" value={p.auctionStatus} onChange={(e) => upd(p.id, { auctionStatus: e.target.value })}>
+                      <select className="bg-slate-50 border-2 border-transparent rounded-[1.5rem] p-4 font-black text-[10px] uppercase outline-none focus:border-pink-500 transition-all" value={p.auctionStatus} onChange={(e) => upd(p.id, { auctionStatus: e.target.value })}>
                         <option value="Unsold">In Pool</option><option value="Sold">Sold</option>
                       </select>
-                      <input placeholder="TEAM NAME" className="bg-slate-50 border-2 border-transparent rounded-[1.5rem] p-4 w-56 font-black text-[10px] uppercase focus:bg-white focus:border-pink-500 outline-none" value={p.team === '-' ? '' : p.team} onChange={(e) => upd(p.id, { team: e.target.value })} />
+                      <input placeholder="TEAM NAME" className="bg-slate-50 border-2 border-transparent rounded-[1.5rem] p-4 w-56 font-black text-[10px] uppercase outline-none focus:bg-white focus:border-pink-500 shadow-inner transition-all" value={p.team === '-' ? '' : p.team} onChange={(e) => upd(p.id, { team: e.target.value })} />
                     </div>
                   </td>
                 </tr>
@@ -269,14 +265,14 @@ const AdminDashboard = ({ players, exportData, upd, regControl, updateControl })
         </div>
       </div>
       {sel && (
-        <div className="fixed inset-0 bg-slate-900/95 flex items-center justify-center p-4 z-[999] backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="bg-white p-16 rounded-[5rem] w-full max-w-2xl text-center relative shadow-2xl">
-            <button onClick={() => setSel(null)} className="absolute -top-5 -right-5 bg-white text-slate-900 rounded-full p-5 shadow-2xl hover:scale-110 transition-all"><X size={28}/></button>
+        <div className="fixed inset-0 bg-slate-900/95 flex items-center justify-center p-4 z-[999] backdrop-blur-2xl animate-in fade-in duration-300">
+          <div className="bg-white p-16 rounded-[5rem] w-full max-w-2xl text-center relative shadow-2xl border border-white/10">
+            <button onClick={() => setSel(null)} className="absolute -top-5 -right-5 bg-white text-slate-900 rounded-full p-5 shadow-2xl hover:scale-110 transition-all active:scale-90"><X size={28}/></button>
             <h3 className="font-black text-4xl mb-10 italic uppercase underline decoration-pink-500 tracking-tighter italic">Proof Review</h3>
-            <div className="bg-slate-50 p-6 rounded-[3.5rem] mb-12 flex items-center justify-center min-h-[400px]">
+            <div className="bg-slate-50 p-6 rounded-[3.5rem] mb-12 flex items-center justify-center min-h-[400px] border shadow-inner">
               {sel.screenshot ? <img src={sel.screenshot} className="max-h-[500px] w-full object-contain rounded-3xl shadow-2xl" alt="Proof" /> : <div className="text-slate-300 font-black tracking-[0.5em]">NO DATA</div>}
             </div>
-            <button onClick={async () => { await upd(sel.id, { paymentStatus: 'Paid' }); setSel(null); }} className="w-full py-7 bg-emerald-600 text-white rounded-full font-black shadow-2xl uppercase tracking-widest text-xs hover:bg-emerald-700 transition-all">Verify & Approve</button>
+            <button onClick={async () => { await upd(sel.id, { paymentStatus: 'Paid' }); setSel(null); }} className="w-full py-7 bg-emerald-600 text-white rounded-full font-black shadow-2xl uppercase tracking-widest text-xs hover:bg-emerald-700 transition-all active:scale-95">Verify & Approve</button>
           </div>
         </div>
       )}
@@ -338,7 +334,7 @@ export default function App() {
     let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
     const link = document.createElement("a");
     link.href = encodeURI(csvContent);
-    link.download = `NPCC_Master_Report.csv`;
+    link.download = `NPCC_Dhulandi_Cup_Report.csv`;
     link.click();
   };
 
@@ -359,13 +355,14 @@ export default function App() {
   if (loading) return (
     <div className="h-screen flex flex-col items-center justify-center bg-[#fdfaf8] text-slate-900 font-black tracking-[0.5em] uppercase text-xs italic">
       <RefreshCcw className="animate-spin text-pink-500 mb-12" size={64}/>
-      <p className="animate-pulse">Connecting Cloud Server...</p>
+      <p className="animate-pulse">Loading Championship Server...</p>
     </div>
   );
 
   const availDates = category === 'Youth' ? ['4 Apr', '5 Apr'] : ['3 Apr', '4 Apr', '5 Apr'];
-
-  const qrUrl = `https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=${encodeURIComponent('upi://pay?pa=bjain6851@okaxis&pn=Bhuvan%20Jain&am=600&cu=INR')}&choe=UTF-8`;
+  // UPI QR String fixed for API reliability
+  const upiUri = `upi://pay?pa=bjain6851@okaxis&pn=Bhuvan%20Jain&am=600&cu=INR`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(upiUri)}`;
 
   return (
     <div className="min-h-screen bg-[#fdfaf8] font-sans pb-20 overflow-x-hidden selection:bg-pink-200">
@@ -386,25 +383,25 @@ export default function App() {
             }));
             navigate('payment');
           }} className="max-w-2xl mx-auto mt-12 p-12 bg-white rounded-[4rem] shadow-2xl space-y-10 mx-4 border border-pink-50 font-sans">
-            <h2 className="text-4xl font-black text-slate-800 uppercase italic text-center underline decoration-pink-300">Registration</h2>
+            <h2 className="text-4xl font-black text-slate-800 uppercase italic text-center underline decoration-pink-300 tracking-tighter">Registration</h2>
             <div className="space-y-6 text-left">
-              <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">Full Player Name</label>
+              <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4 italic">Full Player Name</label>
               <input name="name" required placeholder="NAME" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold uppercase focus:border-pink-500 border-2 border-transparent outline-none transition-all shadow-inner" /></div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">Age</label>
+                <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4 italic">Age</label>
                 <input name="age" required type="number" placeholder="AGE" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold focus:border-pink-500 outline-none transition-all shadow-inner border-2 border-transparent" /></div>
-                <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">DOB (mm/dd/yyyy)</label>
+                <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4 italic">DOB (mm/dd/yyyy)</label>
                 <input name="dob" required type="date" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold focus:border-pink-500 outline-none transition-all shadow-inner border-2 border-transparent" /></div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">WhatsApp Number</label>
+                <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4 italic">WhatsApp Number</label>
                 <input name="contact" required placeholder="NUMBER" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold focus:border-pink-500 border-2 border-transparent outline-none transition-all shadow-inner" /></div>
-                <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4">Native in Rajasthan</label>
+                <div className="space-y-2"><label className="text-[10px] font-black uppercase tracking-widest text-pink-500 ml-4 italic">Native in Rajasthan</label>
                 <input name="native" required placeholder="CITY/TOWN" className="w-full p-6 bg-slate-50 rounded-[2rem] font-bold uppercase focus:border-pink-500 border-2 border-transparent outline-none transition-all shadow-inner" /></div>
               </div>
             </div>
             <div className="bg-pink-50/50 p-8 rounded-[2.5rem] border border-pink-100 text-center">
-               <p className="font-black text-slate-800 uppercase text-[10px] tracking-widest mb-6 italic leading-none">Select Availability</p>
+               <p className="font-black text-slate-800 uppercase text-[10px] tracking-widest mb-6 italic leading-none">Tournament Availability</p>
                <div className="flex flex-wrap gap-4">
                  {availDates.map(date => (
                    <label key={date} className={`flex-1 min-w-[100px] flex items-center justify-center gap-3 p-4 rounded-2xl cursor-pointer transition-all border-2 ${availability[date] ? 'bg-pink-600 border-pink-600 text-white shadow-lg shadow-pink-200' : 'bg-white border-pink-100 text-pink-200'}`}>
@@ -415,8 +412,8 @@ export default function App() {
                  ))}
                </div>
             </div>
-            <div className="border-4 border-dashed p-10 text-center rounded-[3rem] bg-slate-50 border-slate-200 relative group flex flex-col items-center justify-center min-h-[160px]">
-              {tempPlayer?.photoUrl ? <img src={tempPlayer.photoUrl} className="h-32 w-32 rounded-2xl object-cover border-4 border-white shadow-lg" alt="" /> : 
+            <div className="border-4 border-dashed p-10 text-center rounded-[3rem] bg-slate-50 border-slate-200 relative group flex flex-col items-center justify-center min-h-[160px] active:scale-95 transition-all">
+              {tempPlayer?.photoUrl ? <img src={tempPlayer.photoUrl} className="h-32 w-32 rounded-2xl object-cover border-4 border-white shadow-lg rotate-2" alt="" /> : 
               <>{imgLoading ? <Loader2 className="animate-spin text-pink-500" size={40}/> : <Camera size={40} className="text-pink-300 mb-2"/>}
               <span className="text-[10px] font-black text-pink-300 uppercase tracking-widest">{imgLoading ? "Processing..." : "Profile Photo"}</span></>}
               <input type="file" required accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={(e) => handlePhotoUpload(e, (url) => setTempPlayer(p => ({...p, photoUrl: url})))} />
@@ -426,17 +423,17 @@ export default function App() {
         )}
 
         {view === 'payment' && (
-          <div className="max-w-xl mx-auto mt-12 p-12 bg-white rounded-[4rem] shadow-2xl text-center border-t-[15px] border-pink-500 mx-4 font-sans">
-             <h2 className="text-3xl font-black text-slate-800 mb-8 italic tracking-tighter uppercase leading-none underline decoration-pink-200">Pay 600 using this QR</h2>
-             <div className="bg-gradient-to-b from-pink-50 to-white p-12 rounded-[3.5rem] mb-10 border border-pink-100 shadow-inner">
+          <div className="max-w-xl mx-auto mt-12 p-12 bg-white rounded-[4rem] shadow-2xl text-center border-t-[15px] border-pink-500 mx-4 font-sans relative overflow-hidden">
+             <h2 className="text-3xl font-black text-slate-800 mb-8 italic tracking-tighter uppercase leading-none underline decoration-pink-200 relative z-10">Pay 600 using this QR</h2>
+             <div className="bg-gradient-to-b from-pink-50 to-white p-12 rounded-[3.5rem] mb-10 border border-pink-100 shadow-inner relative z-10">
                <div className="bg-white p-4 rounded-3xl shadow-2xl inline-block mb-8 rotate-1">
-                 <img src={qrUrl} className="w-64 h-auto rounded-xl" alt="QR Code" />
+                 <img src={qrUrl} className="w-64 h-64 rounded-xl" alt="QR Code" />
                </div>
                <p className="font-black text-slate-800 text-2xl uppercase mb-1 tracking-tighter leading-none">Bhuvan Jain</p>
                <div className="bg-purple-100 text-purple-700 py-2.5 px-8 rounded-full inline-block font-black text-[10px] uppercase mb-8 tracking-widest shadow-sm">bjain6851@okaxis</div>
              </div>
-             <div className="border-4 border-dotted p-12 bg-slate-50 rounded-[3rem] border-slate-200 relative mb-10 group hover:border-pink-400 min-h-[160px] flex flex-col items-center justify-center">
-               {tempPlayer?.screenshot ? <img src={tempPlayer.screenshot} className="h-44 w-auto rounded-xl shadow-lg border-2 border-white" alt="" /> : 
+             <div className="border-4 border-dotted p-12 bg-slate-50 rounded-[3rem] border-slate-200 relative mb-10 group hover:border-pink-400 min-h-[160px] flex flex-col items-center justify-center z-10 active:scale-95 transition-all">
+               {tempPlayer?.screenshot ? <img src={tempPlayer.screenshot} className="h-44 w-auto rounded-xl shadow-lg border-2 border-white rotate-1" alt="" /> : 
                <>{imgLoading ? <Loader2 className="animate-spin text-pink-500" size={40}/> : <CreditCard size={32} className="text-slate-300 mb-2"/>}
                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{imgLoading ? "Processing..." : "Payment Proof"}</span></>}
                <input type="file" required accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={(e) => handlePhotoUpload(e, (url) => setTempPlayer(p => ({...p, screenshot: url})), true)} />
@@ -444,22 +441,22 @@ export default function App() {
              <button onClick={async () => {
                if(!tempPlayer.screenshot) return alert("Upload screenshot!");
                try { await setDoc(doc(db, ...COLLECTION_PATH, tempPlayer.id), tempPlayer); navigate('success'); } catch(err) { alert(err.message); }
-             }} className="w-full bg-slate-900 text-white py-8 rounded-full font-black text-xl shadow-2xl active:scale-95 transition-all uppercase tracking-widest">SUBMIT DATA</button>
+             }} className="w-full bg-slate-900 text-white py-8 rounded-full font-black text-xl shadow-2xl active:scale-95 transition-all uppercase tracking-widest relative z-10">SUBMIT DATA</button>
           </div>
         )}
         {view === 'directory' && <PlayerDirectory players={players} filterType={filterType} setFilterType={setFilterType} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />}
         {view === 'admin-login' && (
           <div className="max-w-md mx-auto mt-24 p-16 bg-white rounded-[5rem] shadow-2xl text-center border border-pink-50 mx-4">
-            <Shield size={48} className="mx-auto text-pink-500 mb-10" />
-            <h2 className="text-4xl font-black mb-12 uppercase italic text-slate-800 tracking-tighter">Admin Portal</h2>
-            <input type="password" placeholder="SECRET KEY" className="w-full p-8 bg-slate-50 border-2 rounded-[2.5rem] text-center font-black text-2xl outline-none focus:border-pink-500 shadow-inner" onChange={e => {if(e.target.value === 'bababhuvandev') {setIsAdmin(true); navigate('admin')}}} />
+            <Shield size={48} className="mx-auto text-pink-500 mb-10 shadow-lg p-2 bg-pink-50 rounded-2xl" />
+            <h2 className="text-4xl font-black mb-12 uppercase italic text-slate-800 tracking-tighter leading-none">Admin Portal</h2>
+            <input type="password" placeholder="SECRET KEY" className="w-full p-8 bg-slate-50 border-2 rounded-[2.5rem] text-center font-black text-2xl outline-none focus:border-pink-500 shadow-inner transition-all" onChange={e => {if(e.target.value === 'bababhuvandev') {setIsAdmin(true); navigate('admin')}}} />
           </div>
         )}
         {view === 'admin' && <AdminDashboard players={players} exportData={exportData} upd={upd} regControl={regControl} updateControl={updateControl} />}
         {view === 'success' && (
           <div className="max-w-xl mx-auto mt-24 text-center p-20 bg-white rounded-[6rem] shadow-2xl mx-4 border-b-8 border-emerald-500">
             <CheckCircle size={64} className="mx-auto text-emerald-500 mb-10 animate-bounce" />
-            <h2 className="text-6xl font-black text-slate-900 italic uppercase tracking-tighter leading-[0.8] mb-8 underline decoration-emerald-200 text-sans">Success!</h2>
+            <h2 className="text-6xl font-black text-slate-900 italic uppercase tracking-tighter leading-[0.8] mb-8 underline decoration-emerald-200">Registered!</h2>
             <button onClick={() => navigate('directory')} className="w-full bg-slate-900 text-white py-8 rounded-full font-black uppercase italic tracking-widest text-xs shadow-2xl hover:-translate-y-1 transition-all">View Directory</button>
           </div>
         )}
