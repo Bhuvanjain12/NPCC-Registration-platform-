@@ -29,7 +29,7 @@ const appId = "npcc-registration-platform";
 const COLLECTION_PATH = ['artifacts', appId, 'public', 'data', 'players'];
 const SETTINGS_DOC_PATH = ['artifacts', appId, 'public', 'data', 'settings', 'registrationControl'];
 
-// Aggressive Compression for iOS/Android Compatibility
+// Aggressive Compression for Speed & Capacity
 const compressImage = (file, isScreenshot = false) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -55,11 +55,11 @@ const compressImage = (file, isScreenshot = false) => {
   });
 };
 
-// --- SUB-COMPONENTS (DEFINED OUTSIDE TO FIX FOCUS BUG) ---
+// --- SUB-COMPONENTS (OUTSIDE TO FIX FOCUS BUG) ---
 
 const Navbar = memo(({ navigate, isAdmin, setIsAdmin }) => (
-  <nav className="bg-white/90 backdrop-blur-xl p-4 shadow-xl sticky top-0 z-50 border-b border-pink-100">
-    <div className="max-w-7xl mx-auto flex justify-between items-center text-sans">
+  <nav className="bg-white/95 backdrop-blur-xl p-4 shadow-xl sticky top-0 z-50 border-b border-pink-100">
+    <div className="max-w-7xl mx-auto flex justify-between items-center font-sans">
       <div className="font-black text-2xl cursor-pointer flex items-center gap-2 tracking-tighter" onClick={() => navigate('landing')}>
         <div className="w-10 h-10 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg rotate-3">
           <Palette size={20} />
@@ -68,7 +68,7 @@ const Navbar = memo(({ navigate, isAdmin, setIsAdmin }) => (
         <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 sm:hidden uppercase tracking-tighter">NPCC</span>
       </div>
       <div className="flex gap-4 text-xs font-black uppercase tracking-widest items-center">
-        <button onClick={() => navigate('directory')} className="text-purple-600 hover:text-pink-500 transition-colors">Directory</button>
+        <button onClick={() => navigate('directory')} className="text-purple-600 hover:text-pink-500">Directory</button>
         {!isAdmin ? (
           <button onClick={() => navigate('admin-login')} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-5 py-2 rounded-full shadow-lg text-[10px]">Admin</button>
         ) : (
@@ -80,7 +80,7 @@ const Navbar = memo(({ navigate, isAdmin, setIsAdmin }) => (
 ));
 
 const Landing = memo(({ navigate, setCategory, regControl }) => (
-  <div className="max-w-6xl mx-auto mt-12 px-4 text-center pb-24 relative">
+  <div className="max-w-6xl mx-auto mt-12 px-4 text-center pb-24 relative font-sans">
     <div className="mb-6 inline-flex items-center gap-2 bg-gradient-to-r from-pink-50 to-purple-50 text-purple-700 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] shadow-sm border border-white">
       <Sparkles size={14} className="text-pink-500 animate-pulse"/> Season 2026 Live
     </div>
@@ -94,10 +94,11 @@ const Landing = memo(({ navigate, setCategory, regControl }) => (
       Cricket of Colors • Professional Championship
     </p>
     <div className="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto">
+      {/* Youth Button */}
       <button 
         disabled={!regControl.youthOpen}
         onClick={() => { setCategory('Youth'); navigate('register'); }} 
-        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.youthOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-pink-300 shadow-pink-100'}`}
+        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.youthOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-pink-300'}`}
       >
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-pink-50 rounded-full"></div>
         <Zap className={`${!regControl.youthOpen ? 'text-gray-400' : 'text-pink-600'} mb-10 relative z-10`} size={56} />
@@ -107,10 +108,11 @@ const Landing = memo(({ navigate, setCategory, regControl }) => (
         </div>
       </button>
 
+      {/* 40+ Button */}
       <button 
         disabled={!regControl.fortyPlusOpen}
         onClick={() => { setCategory('40+'); navigate('register'); }} 
-        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.fortyPlusOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-purple-300 shadow-purple-100'}`}
+        className={`relative p-12 rounded-[3.5rem] shadow-xl border-2 transition-all text-left group overflow-hidden active:scale-95 ${!regControl.fortyPlusOpen ? 'bg-gray-100 border-gray-200 cursor-not-allowed grayscale opacity-60' : 'bg-white border-transparent hover:border-purple-300'}`}
       >
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-purple-50 rounded-full"></div>
         <Trophy className={`${!regControl.fortyPlusOpen ? 'text-gray-400' : 'text-purple-600'} mb-10 relative z-10`} size={56} />
@@ -130,7 +132,7 @@ const Landing = memo(({ navigate, setCategory, regControl }) => (
 ));
 
 const PlayerCard = memo(({ p }) => (
-  <div className="bg-white rounded-[4rem] shadow-xl overflow-hidden group hover:-translate-y-4 transition-all duration-500 border border-slate-50">
+  <div className="bg-white rounded-[4rem] shadow-xl overflow-hidden group hover:-translate-y-4 transition-all duration-500 border border-slate-50 font-sans">
     <div className="h-80 relative overflow-hidden bg-slate-100">
       <img src={p.photoUrl} loading="lazy" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-110" alt={p.name} />
       <div className="absolute top-8 left-8 flex flex-col gap-2">
@@ -164,7 +166,7 @@ const PlayerDirectory = ({ players, filterType, setFilterType, searchTerm, setSe
   }, [players, filterType, searchTerm]);
 
   return (
-    <div className="max-w-7xl mx-auto mt-12 p-6 pb-32">
+    <div className="max-w-7xl mx-auto mt-12 p-6 pb-32 font-sans">
       <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-10 text-center md:text-left">
          <div>
             <h2 className="text-7xl font-black text-slate-900 uppercase italic tracking-tighter leading-none mb-4">THE POOL</h2>
@@ -173,7 +175,7 @@ const PlayerDirectory = ({ players, filterType, setFilterType, searchTerm, setSe
             </p>
          </div>
          <div className="flex flex-col gap-5 w-full md:w-auto">
-           <div className="relative">
+           <div className="relative group">
              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-pink-400" size={20} />
              <input type="text" placeholder="FIND A PLAYER..." className="bg-white border-2 border-slate-100 rounded-full pl-16 pr-8 py-5 w-full md:w-96 font-black text-xs tracking-widest focus:border-pink-500 outline-none shadow-2xl transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
            </div>
@@ -184,7 +186,7 @@ const PlayerDirectory = ({ players, filterType, setFilterType, searchTerm, setSe
            </div>
          </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 text-sans">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
         {filteredList.map(p => <PlayerCard key={p.id} p={p} />)}
       </div>
     </div>
@@ -257,7 +259,7 @@ const AdminDashboard = ({ players, exportData, upd, regControl, updateControl })
                       <select className="bg-slate-50 border-2 border-transparent rounded-[1.5rem] p-4 font-black text-[10px] uppercase outline-none focus:border-pink-500" value={p.auctionStatus} onChange={(e) => upd(p.id, { auctionStatus: e.target.value })}>
                         <option value="Unsold">In Pool</option><option value="Sold">Sold</option>
                       </select>
-                      <input placeholder="TEAM NAME" className="bg-slate-50 border-2 border-transparent rounded-[1.5rem] p-4 w-56 font-black text-[10px] uppercase outline-none focus:bg-white focus:border-pink-500 shadow-inner" value={p.team === '-' ? '' : p.team} onChange={(e) => upd(p.id, { team: e.target.value })} />
+                      <input placeholder="TEAM NAME" className="bg-slate-50 border-2 border-transparent rounded-[1.5rem] p-4 w-56 font-black text-[10px] uppercase focus:bg-white focus:border-pink-500 outline-none" value={p.team === '-' ? '' : p.team} onChange={(e) => upd(p.id, { team: e.target.value })} />
                     </div>
                   </td>
                 </tr>
@@ -267,7 +269,7 @@ const AdminDashboard = ({ players, exportData, upd, regControl, updateControl })
         </div>
       </div>
       {sel && (
-        <div className="fixed inset-0 bg-slate-900/95 flex items-center justify-center p-4 z-[999] backdrop-blur-2xl animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-slate-900/95 flex items-center justify-center p-4 z-[999] backdrop-blur-xl animate-in fade-in duration-300">
           <div className="bg-white p-16 rounded-[5rem] w-full max-w-2xl text-center relative shadow-2xl">
             <button onClick={() => setSel(null)} className="absolute -top-5 -right-5 bg-white text-slate-900 rounded-full p-5 shadow-2xl hover:scale-110 transition-all"><X size={28}/></button>
             <h3 className="font-black text-4xl mb-10 italic uppercase underline decoration-pink-500 tracking-tighter italic">Proof Review</h3>
@@ -350,18 +352,20 @@ export default function App() {
     try {
       const compressed = await compressImage(file, isScreenshot);
       setPhotoState(compressed);
-    } catch (err) { alert("Image size too large."); }
+    } catch (err) { alert("Try a smaller image."); }
     setImgLoading(false);
   };
 
   if (loading) return (
     <div className="h-screen flex flex-col items-center justify-center bg-[#fdfaf8] text-slate-900 font-black tracking-[0.5em] uppercase text-xs italic">
       <RefreshCcw className="animate-spin text-pink-500 mb-12" size={64}/>
-      <p className="animate-pulse">Accessing Cloud Server...</p>
+      <p className="animate-pulse">Connecting Cloud Server...</p>
     </div>
   );
 
   const availDates = category === 'Youth' ? ['4 Apr', '5 Apr'] : ['3 Apr', '4 Apr', '5 Apr'];
+
+  const qrUrl = `https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=${encodeURIComponent('upi://pay?pa=bjain6851@okaxis&pn=Bhuvan%20Jain&am=600&cu=INR')}&choe=UTF-8`;
 
   return (
     <div className="min-h-screen bg-[#fdfaf8] font-sans pb-20 overflow-x-hidden selection:bg-pink-200">
@@ -422,11 +426,11 @@ export default function App() {
         )}
 
         {view === 'payment' && (
-          <div className="max-w-xl mx-auto mt-12 p-12 bg-white rounded-[4rem] shadow-2xl text-center border-t-[15px] border-pink-500 mx-4">
+          <div className="max-w-xl mx-auto mt-12 p-12 bg-white rounded-[4rem] shadow-2xl text-center border-t-[15px] border-pink-500 mx-4 font-sans">
              <h2 className="text-3xl font-black text-slate-800 mb-8 italic tracking-tighter uppercase leading-none underline decoration-pink-200">Pay 600 using this QR</h2>
              <div className="bg-gradient-to-b from-pink-50 to-white p-12 rounded-[3.5rem] mb-10 border border-pink-100 shadow-inner">
                <div className="bg-white p-4 rounded-3xl shadow-2xl inline-block mb-8 rotate-1">
-                 <img src="https://i.ibb.co/6RTPXNKM/1000277092.png" className="w-64 h-auto rounded-xl" alt="QR" />
+                 <img src={qrUrl} className="w-64 h-auto rounded-xl" alt="QR Code" />
                </div>
                <p className="font-black text-slate-800 text-2xl uppercase mb-1 tracking-tighter leading-none">Bhuvan Jain</p>
                <div className="bg-purple-100 text-purple-700 py-2.5 px-8 rounded-full inline-block font-black text-[10px] uppercase mb-8 tracking-widest shadow-sm">bjain6851@okaxis</div>
@@ -448,7 +452,7 @@ export default function App() {
           <div className="max-w-md mx-auto mt-24 p-16 bg-white rounded-[5rem] shadow-2xl text-center border border-pink-50 mx-4">
             <Shield size={48} className="mx-auto text-pink-500 mb-10" />
             <h2 className="text-4xl font-black mb-12 uppercase italic text-slate-800 tracking-tighter">Admin Portal</h2>
-            <input type="password" placeholder="SECRET KEY" className="w-full p-8 bg-slate-50 border-2 rounded-[2.5rem] text-center font-black text-2xl outline-none focus:border-pink-500 shadow-inner transition-all" onChange={e => {if(e.target.value === 'bababhuvandev') {setIsAdmin(true); navigate('admin')}}} />
+            <input type="password" placeholder="SECRET KEY" className="w-full p-8 bg-slate-50 border-2 rounded-[2.5rem] text-center font-black text-2xl outline-none focus:border-pink-500 shadow-inner" onChange={e => {if(e.target.value === 'bababhuvandev') {setIsAdmin(true); navigate('admin')}}} />
           </div>
         )}
         {view === 'admin' && <AdminDashboard players={players} exportData={exportData} upd={upd} regControl={regControl} updateControl={updateControl} />}
